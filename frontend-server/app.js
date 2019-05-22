@@ -61,7 +61,7 @@ async function getContractState({ contractName }) {
     return returnValue;
 }
 
-app.post('/api/send', async (req, res) => {
+app.post('/api/execute', async (req, res) => {
     const incomingJson = {
         type: 'tx',
         contractName: req.body.contractName,
@@ -94,8 +94,11 @@ app.post('/api/send', async (req, res) => {
     try {
         const callResult = await exec(`gamma-cli ${requiredCallType} ${requestJsonFilepath} -signer user1`);
         console.log(callResult.stdout);
+        const stateJson = await getContractState({ contractName: incomingJson.contractName });
+
         res.json({
             ok: true,
+            stateJson,
             result: JSON.parse(callResult.stdout),
         });
     } catch (err) {

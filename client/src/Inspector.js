@@ -6,10 +6,10 @@ import { CardContent, CardActions, Card } from '@material-ui/core';
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
-const Inspector = ({ contractName, methods }) => {
+const Inspector = ({ contractName, methods, onUpdateStateView }) => {
 
   const testCall = () => {
-    axios.post(`${basePath}/api/send`, {
+    axios.post(`${basePath}/api/execute`, {
       type: 'query',
       contractName,
       method: 'add',
@@ -17,13 +17,15 @@ const Inspector = ({ contractName, methods }) => {
         value: 5,
         type: 'uint64'
       }]
-    })
+    }).then((res) => {
+      onUpdateStateView(res.data.stateJson.result);
+    });
   };
 
   const execute = (methodName) => {
-  
   };
-  const renderMethod = ({methodName, args}) => {
+
+  const renderMethod = ({ methodName, args }) => {
     return (
       <Card>
         <CardContent></CardContent>
