@@ -84,7 +84,7 @@ async function decorateAndDeploy(code) {
     const stateJson = await getContractState({ contractName });
     const methods = JSON.parse(gammaResponse);
 
-    return {contractName, methods, stateJson}
+    return { contractName, methods, stateJson }
 }
 
 app.get('/api/files', async (req, res) => {
@@ -102,18 +102,8 @@ app.post('/api/files/:name', async (req, res) => {
     res.end();
 });
 
-app.post('/api/send', async (req, res) => {
-    const incomingJson = {
-        type: 'tx',
-        contractName: req.body.contractName,
-        method: 'add',
-        args: [
-            {
-                value: 5,
-                type: 'uint64'
-            }
-        ]
-    };
+app.post('/api/execute', async (req, res) => {
+    const incomingJson = req.body;
 
     // Generate the json for sending the request
     const requestJsonObject = {
@@ -177,7 +167,7 @@ app.post('/api/deploy', async (req, res) => {
 
     const file = files.load("THE_ONE_AND_ONLY_FILE")
 
-    const {contractName, methods, stateJson} = await decorateAndDeploy(file.code)
+    const { contractName, methods, stateJson } = await decorateAndDeploy(file.code)
 
     res.json({
         ok: true,
@@ -191,7 +181,7 @@ app.post('/api/deploy', async (req, res) => {
 app.post('/api/deploy/:name', async (req, res) => {
     const code = files.load(req.params.name)
 
-    const {contractName, methods, stateJson} = decorateAndDeploy(code)
+    const { contractName, methods, stateJson } = decorateAndDeploy(code)
 
     res.json({
         ok: true,
