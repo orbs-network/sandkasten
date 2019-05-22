@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"github.com/orbs-network/orbs-contract-sdk/go/testing/unit"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -57,10 +59,47 @@ func TestMutateStateAppendsKeysToState(t *testing.T) {
 		s1 := _getStates()[1]
 		s2 := _getStates()[2]
 
-		require.EqualValues(t, 1, s0["A"], "state 0 did not contain expected value")
-		require.EqualValues(t, 1, s1["A"], "state 1 did not contain expected value")
-		require.EqualValues(t, 2, s1["B"], "state 1 did not contain expected value")
-		require.EqualValues(t, 3, s2["A"], "state 2 did not contain expected value")
-		require.EqualValues(t, 2, s2["B"], "state 2 did not contain expected value")
+		require.EqualValues(t, 1, s0["41"], "state 0 did not contain expected value")
+		require.EqualValues(t, 1, s1["41"], "state 1 did not contain expected value")
+		require.EqualValues(t, 2, s1["42"], "state 1 did not contain expected value")
+		require.EqualValues(t, 3, s2["41"], "state 2 did not contain expected value")
+		require.EqualValues(t, 2, s2["42"], "state 2 did not contain expected value")
+	})
+}
+
+func TestStateKeysWithWeirdByteValues(t *testing.T) {
+	unit.InServiceScope([]byte{}, []byte{}, func(mockery unit.Mockery) {
+
+		rawBytes, err := hex.DecodeString("7ec33f886a0E60a29d4FF9A6C9B33AF8f0e217D4")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		_mutateState(rawBytes, 1)
+		_mutateState(rawBytes, 2)
+
+		s0 := _getStates()[0]
+		s1 := _getStates()[1]
+
+		require.EqualValues(t, 1, s0["7ec33f886a0e60a29d4ff9a6c9b33af8f0e217d4"], "state 0 did not contain expected value")
+		require.EqualValues(t, 2, s1["7ec33f886a0e60a29d4ff9a6c9b33af8f0e217d4"], "state 1 did not contain expected value")
+	})
+}
+
+
+func TestExport(t *testing.T) {
+	unit.InServiceScope([]byte{}, []byte{}, func(mockery unit.Mockery) {
+
+
+		_mutateState([]byte("A"), 1)
+		_mutateState([]byte("B"), 2)
+		_mutateState([]byte("A"), 3)
+
+		rawData := goebbelsReadProxiedState()
+		var rawStates stateRevisions
+
+		err := json.Unmarshal(rawData, &rawStates)
+		require.NoError(t, err, "unmarshal failed for exported states")
+		require.Len(t, rawStates, 3, "expecting three states in this test")
 	})
 }

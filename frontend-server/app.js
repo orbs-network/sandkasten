@@ -104,6 +104,17 @@ app.post('/api/deploy/:name', async (req, res) => {
     res.end();
 });
 
+app.post('/api/test/:name', async (req, res) => {
+    const {stdout, success} = await contracts.runTest(req.params.name);
+
+    res.json({
+        ok: true,
+        allTestsPassed: success,
+        output: stdout,
+    });
+    res.end();
+});
+
 const targetPort = process.env.port || 3030;
 
 app.listen(targetPort, function () {

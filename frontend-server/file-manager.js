@@ -14,7 +14,7 @@ class FileManager {
     load(name) {
         const file = this.files[name];
         if (file) {
-            return file
+            return file;
         } else {
             this.new(name)
             return this.files[name];
