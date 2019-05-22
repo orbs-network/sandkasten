@@ -6,12 +6,12 @@ import { CardContent, CardActions, Card, TextField } from '@material-ui/core';
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
-const Inspector = ({ contractName, methods }) => {
+const Inspector = ({ contractName, methods, onUpdateStateView }) => {
 
   const execute = (methodName) => {
-  
   };
-  const renderMethod = ({methodName, args}) => {
+
+  const renderMethod = ({ methodName, args }) => {
     return (
       <Card>
         <CardContent>

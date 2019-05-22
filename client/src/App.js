@@ -10,18 +10,17 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import Badge from '@material-ui/core/Badge';
-import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import CodeIcon from '@material-ui/icons/Code';
 import InspectorIcon from '@material-ui/icons/Dns';
 import StateIcon from '@material-ui/icons/DeviceHub';
+import MenuIcon from '@material-ui/icons/Menu';
 
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 
 import { mainListItems, secondaryListItems } from './listItems';
-import SimpleTable from './SimpleTable';
+import StateView from './StateView';
 
 import './App.css';
 import axios from 'axios';
@@ -131,7 +130,7 @@ class App extends React.Component {
   state = {
     open: false,
     contractName: '',
-    contractState: {},
+    contractState: [],
     methods: []
   };
 
@@ -151,20 +150,21 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { methods }));
   }
 
-  setContractState(state) {
-    this.contractState = state;
+  setContractState(contractState) {
+    this.setState(Object.assign({}, this.state, { contractState }));
   }
 
   async deploymentHandler(code) {
     const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
     const { contractName, stateJson, methods } = data;
     this.setContractName(contractName);
-    this.setMethods(methods.map(m => ({methodName: m.Name, args: m.Args})));
-    this.setContractState(stateJson);
+    this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
+    this.setContractState(stateJson.result);
   };
 
   render() {
     const { classes } = this.props;
+    const { contractState } = this.state;
 
     return (
       <div className={classes.root}>
@@ -232,7 +232,7 @@ class App extends React.Component {
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
                 <hr />
-                <Inspector contractName={this.state.contractName} methods={this.state.methods} />
+                <Inspector onUpdateStateView={this.setContractState.bind(this)} contractName={this.state.contractName} methods={this.state.methods} />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>
@@ -240,27 +240,12 @@ class App extends React.Component {
                   <StateIcon className={classes.iconCommon} /> State view
                 </Typography>
                 <hr />
+                <StateView data={contractState}></StateView>
               </Paper>
             </Grid>
           </Grid>
         </main>
       </div>
-
-      // <div className="container">
-      //   <header className="header">Orbs Smart Contracts Playground</header>
-      //   <section className="pane1">
-      //     <h2>Code</h2>
-
-      //   </section>
-      //   <section className="pane2">
-      //     <h2>Methods</h2>
-      //     <Inspector methods={methods} contractName={contractName} />
-      //   </section>
-      //   <article>
-      //     <ContractState contractName={contractName} />
-      //   </article>
-      //   <footer className="footer">&copy; 2019 Orbs Network</footer>
-      // </div>
     );
   }
 }

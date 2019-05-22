@@ -107,18 +107,8 @@ app.post('/api/files/:name', async (req, res) => {
     res.end();
 });
 
-app.post('/api/send', async (req, res) => {
-    const incomingJson = {
-        type: 'tx',
-        contractName: req.body.contractName,
-        method: 'add',
-        args: [
-            {
-                value: 5,
-                type: 'uint64'
-            }
-        ]
-    };
+app.post('/api/execute', async (req, res) => {
+    const incomingJson = req.body;
 
     // Generate the json for sending the request
     const requestJsonObject = {
@@ -140,8 +130,11 @@ app.post('/api/send', async (req, res) => {
     try {
         const callResult = await exec(`gamma-cli ${requiredCallType} ${requestJsonFilepath} -signer user1`);
         console.log(callResult.stdout);
+        const stateJson = await getContractState({ contractName: incomingJson.contractName });
+
         res.json({
             ok: true,
+            stateJson,
             result: JSON.parse(callResult.stdout),
         });
     } catch (err) {
