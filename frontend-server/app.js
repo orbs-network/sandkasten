@@ -7,6 +7,10 @@ const { exec } = require('child-process-promise');
 const writeFile = util.promisify(fs.writeFile);
 const uuid = require('uuid');
 const path = require('path');
+const { decodeHex } = require('orbs-client-sdk');
+
+const { StringDecoder } = require('string_decoder');
+const decoder = new StringDecoder('utf8');
 
 var corsOption = {
     origin: true,
@@ -68,7 +72,7 @@ app.post('/api/send', async (req, res) => {
 });
 
 app.get('/api/state', async (req, res) => {
-    const contractName = req.params.contractName;
+    const contractName = req.query.contractName;
 
     // Generate the json for sending the request
     const requestJsonObject = {
@@ -84,9 +88,11 @@ app.get('/api/state', async (req, res) => {
     try {
         const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
         console.log(callResult.stdout);
+        const responseFromBlockchain = JSON.parse(callResult.stdout);
+    
         res.json({
             ok: true,
-            result: JSON.parse(callResult.stdout),
+            result: JSON.parse(Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString()),
         });
     } catch (err) {
         console.log(err);
