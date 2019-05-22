@@ -130,6 +130,7 @@ class App extends React.Component {
   state = {
     open: false,
     contractName: '',
+    ctaDisabled: false,
     contractState: [],
     methods: []
   };
@@ -142,6 +143,10 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { open: true }));
   };
 
+  setDeployCTAStatus(newStatus){
+    this.setState(Object.assign({}, this.state, { ctaDisabled: newStatus }));
+  }
+
   handleDrawerClose = () => {
     this.setState(Object.assign({}, this.state, { open: false }));
   };
@@ -150,8 +155,8 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { methods }));
   }
 
-  onSetContractStateForInspector(axiosResponse) {
-    this.setContractState(axiosResponse.data.stateJson.result);
+  onSetContractStateForInspector(data) {
+    this.setContractState(data.stateJson.result);
   }
 
   setContractState(contractState) {
@@ -159,16 +164,18 @@ class App extends React.Component {
   }
 
   async deploymentHandler(code) {
+    this.setDeployCTAStatus(true);
     const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
     const { contractName, stateJson, methods } = data;
     this.setContractName(contractName);
     this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
     this.setContractState(stateJson.result);
+    this.setDeployCTAStatus(false);
   };
 
   render() {
     const { classes } = this.props;
-    const { contractState } = this.state;
+    const { contractState, ctaDisabled } = this.state;
 
     return (
       <div className={classes.root}>
@@ -219,7 +226,6 @@ class App extends React.Component {
         </Drawer>
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
-
           <Grid container spacing={24}>
             <Grid item xs={12} sm={6}>
               <Paper className={classes.paper}>
@@ -227,7 +233,7 @@ class App extends React.Component {
                   <CodeIcon className={classes.iconCommon} /> Code
                 </Typography>
                 <hr />
-                <Editor onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes.deployButton} />
+                <Editor ctaDisabled={ctaDisabled} onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes.deployButton} />
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>
