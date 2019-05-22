@@ -159,7 +159,7 @@ class App extends React.Component {
     const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
     const { contractName, stateJson, methods } = data;
     this.setContractName(contractName);
-    this.setMethods(methods);
+    this.setMethods(methods.map(m => ({methodName: m.Name, args: m.Args})));
     this.setContractState(stateJson);
   };
 
