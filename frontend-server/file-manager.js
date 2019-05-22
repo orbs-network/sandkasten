@@ -4,16 +4,15 @@ class FileManager {
     }
 
     new(name) {
-        this.files[name] = new File()
+        this.files[name] = new File(name);
     }
-
-    save(name, code) {
-        const file = this.load(name)
-        file.code = code
+    
+    save(file) {
+        this.files[file.name] = file;
     }
 
     load(name) {
-        const file = this.files[name]
+        const file = this.files[name];
         if (file) {
             return file
         } else {
@@ -28,12 +27,13 @@ class FileManager {
 }
 
 class File {
-    constructor() {
-        this.lastContractIdInGamma = null
-        this.code = ""
+    constructor(name) {
+        this.lastContractIdInGamma = null;
+        this.code = "";
+        this.name = name;
     }
 }
 
 module.exports = {
     FileManager,
-}
+};
