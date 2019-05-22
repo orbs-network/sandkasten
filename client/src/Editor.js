@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
 import { editor } from 'monaco-editor';
 import { counter } from './contracts/counter';
+import axios from 'axios';
+
+const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
 const Editor = () => {
   let e;
@@ -14,7 +17,10 @@ const Editor = () => {
   }, []);
 
   const deployHandler = () => {
-    console.log(e.getValue());
+    const data = e.getValue();
+    axios.post(`${basePath}/api/deploy`, {data}).then((res) => {
+      console.log(res);
+    });
   };
 
   return (
