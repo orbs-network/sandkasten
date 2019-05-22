@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
-const Editor = () => {
+const Editor = ({onDeploy}) => {
   let e;
   const editorRef = useCallback(node => {
     if (node !== null) {
@@ -17,9 +17,8 @@ const Editor = () => {
   }, []);
 
   const deployHandler = () => {
-    const data = e.getValue();
-    axios.post(`${basePath}/api/deploy`, {data}).then((res) => {
-      console.log(res);
+    axios.post(`${basePath}/api/deploy`, {data: e.getValue()}).then(({data}) => {
+      onDeploy(e.getValue(), data.contractName);
     });
   };
 
