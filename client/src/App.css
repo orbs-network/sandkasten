@@ -1,0 +1,26 @@
+.container {
+  height: 100%;
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: 40px auto 40px;
+  grid-template-areas:
+      "header  header"
+      "content content"
+      "footer  footer"; 
+}
+
+.content {
+  grid-area: content;
+  position: relative;
+}
+
+.header {
+  grid-area: header;
+}
+
+.footer {
+  grid-area: footer;
+  font-size: 12px;
+  text-align: center;
+}
