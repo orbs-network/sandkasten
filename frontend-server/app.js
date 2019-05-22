@@ -64,7 +64,7 @@ async function getContractState({ contractName }) {
     return returnValue;
 }
 
-async function decorateAndDeploy(code) {
+async function decorateAndDeploy(file) {
     const assignedUid = uuid();
     const contractName = `contract_${assignedUid}`;
     const contractFilepath = `/tmp/${contractName}.go`;
@@ -72,7 +72,7 @@ async function decorateAndDeploy(code) {
 
     // Write the contract somewhere
     console.log('writing the contract to file');
-    await writeFile(contractFilepath, code);
+    await writeFile(contractFilepath, file.code);
 
     await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
 
@@ -84,21 +84,26 @@ async function decorateAndDeploy(code) {
     const stateJson = await getContractState({ contractName });
     const methods = JSON.parse(gammaResponse);
 
+    file.lastContractIdInGamma = contractName;
+    files.save(file);
+
     return {contractName, methods, stateJson}
 }
 
 app.get('/api/files', async (req, res) => {
-    res.json(files.list())
+    res.json(files.list());
     res.end();
 });
 
 app.get('/api/files/:name', async (req, res) => {
-    res.json(files.load(req.params.name))
+    res.json(files.load(req.params.name));
     res.end();
 });
 
 app.post('/api/files/:name', async (req, res) => {
-    res.json(files.save(req.params.name, req.body.data))
+    const file = files.load(req.params.name);
+    file.code = req.body.data;
+    files.save(file);
     res.end();
 });
 
@@ -170,11 +175,11 @@ app.get('/api/discover/contract', async (req, res) => {
 });
 
 app.post('/api/deploy', async (req, res) => {
-    files.save("THE_ONE_AND_ONLY_FILE", req.body.data)
+    const file = files.load("THE_ONE_AND_ONLY_FILE");
+    file.code = req.body.data;
+    files.save(file);
 
-    const file = files.load("THE_ONE_AND_ONLY_FILE")
-
-    const {contractName, methods, stateJson} = await decorateAndDeploy(file.code)
+    const {contractName, methods, stateJson} = await decorateAndDeploy(file);
 
     res.json({
         ok: true,
@@ -186,9 +191,7 @@ app.post('/api/deploy', async (req, res) => {
 });
 
 app.post('/api/deploy/:name', async (req, res) => {
-    const code = files.load(req.params.name)
-
-    const {contractName, methods, stateJson} = decorateAndDeploy(code)
+    const {contractName, methods, stateJson} = decorateAndDeploy(files.load(req.params.name))
 
     res.json({
         ok: true,
