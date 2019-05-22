@@ -20,7 +20,7 @@ type methodData struct {
 }
 
 // prints json with AST data for contract; usage: go run gestapo.go -contract <contract-name.go>
-func main2() {
+func main() {
 	contractFileName := flag.String("contract", "counter.go", "contract file to introspect")
 	flag.Parse()
 
