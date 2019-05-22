@@ -1,18 +1,9 @@
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
-const Inspector = ({ code, contractName }) => {
-  const [methods, setMethods] = useState([]);
-  const extractMethods = () => {
-    const line = `PUBLIC = sdk.Export(`;
-    console.log(code.indexOf(line));
-  }
-
-  useEffect(() => {
-    console.log(extractMethods(code));
-  }, [code]);
+const Inspector = ({ contractName, methods }) => {
 
   const execute = () => {
     axios.post(`${basePath}/api/send`, {
@@ -28,6 +19,7 @@ const Inspector = ({ code, contractName }) => {
   return (
     <>
       <div>Hello Inspector</div>
+      <p>Contract Name: {contractName}</p>
       <button onClick={execute}>Test</button>
     </>
   );
