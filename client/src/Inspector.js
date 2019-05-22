@@ -10,13 +10,17 @@ const Inspector = ({ contractName, methods, onUpdateStateView }) => {
 
   const [state, setState] = useState({});
 
-  const execute = (methodName, args = []) => {
-    axios.post(`${basePath}/api/execute`, {
+  const execute = async (methodName, args = []) => {
+    const {data} = await axios.post(`${basePath}/api/execute`, {
       type: 'tx',
       contractName,
       method: methodName,
       args
-    }).then(onUpdateStateView)
+    });
+    onUpdateStateView(data);
+    const newState = {...state};
+    newState[methodName].result = data.result.OutputArguments[0].Value;
+    setState(newState);
   };
 
   useEffect(() => {
@@ -45,9 +49,7 @@ const Inspector = ({ contractName, methods, onUpdateStateView }) => {
             <TextField key={idx} label={arg.Name} placeholder={arg.Type} />
           </Typography>)}
         </CardContent>
-        <CardActions>
-          {result}
-        </CardActions>
+        <Typography variant="h6">{result}</Typography>
       </Card>
     )
   }
