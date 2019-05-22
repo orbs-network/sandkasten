@@ -6,6 +6,7 @@ const util = require('util');
 const { exec } = require('child-process-promise');
 const writeFile = util.promisify(fs.writeFile);
 const uuid = require('uuid');
+const path = require('path');
 
 var corsOption = {
     origin: true,
@@ -20,7 +21,7 @@ app.use(require('body-parser').json());
 
 app.post('/api/send', async (req, res) => {
     const incomingJson = {
-        type: 'query',
+        type: 'tx',
         contractName: req.body.contractName,
         method: 'add',
         args: [
@@ -38,14 +39,14 @@ app.post('/api/send', async (req, res) => {
         Arguments: incomingJson.args.map((anArg) => {
             return {
                 Type: anArg.type,
-                Value: anArg.value,
+                Value: anArg.value.toString(),
             };
         })
     };
 
     const requestJsonFilepath = `/tmp/${uuid()}.json`;
 
-    await writeFile(requestJsonFilepath, requestJsonObject);
+    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
     const requiredCallType = (incomingJson.type === 'tx') ? 'send-tx' : 'run-query';
 
     try {
@@ -53,13 +54,45 @@ app.post('/api/send', async (req, res) => {
         console.log(callResult.stdout);
         res.json({
             ok: true,
-            result: callResult.stdout,
+            result: JSON.parse(callResult.stdout),
         });
     } catch (err) {
-        console.log(callResult.stderr);
+        console.log(err);
         res.json({
             ok: false,
-            result: callResult.stderr,
+            result: err,
+        });
+    }
+
+    res.end();
+});
+
+app.get('/api/state', async (req, res) => {
+    const contractName = req.query.contractName;
+
+    // Generate the json for sending the request
+    const requestJsonObject = {
+        ContractName: contractName,
+        MethodName: 'goebbelsReadProxiedState',
+        Arguments: []
+    };
+
+    const requestJsonFilepath = `/tmp/inspect_state.json`;
+    await exec(`rm -f ${requestJsonFilepath}`);
+    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
+
+    try {
+        const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
+        console.log(callResult.stdout);
+        res.json({
+            ok: true,
+            result: JSON.parse(callResult.stdout),
+        });
+    } catch (err) {
+        console.log(err);
+        res.json({
+            ok: false,
+            result: err,
         });
     }
 
@@ -71,13 +104,15 @@ app.post('/api/deploy', async (req, res) => {
     const assignedUid = uuid();
     const contractName = `contract_${assignedUid}`;
     const contractFilepath = `/tmp/${contractName}.go`;
+    const decoratedContractFilepath = `/tmp/${contractName}_decorated.go`;
 
-    // TODO integrate with the Nazi biatch
     // Write the contract somewhere
     console.log('writing the contract to file');
     await writeFile(contractFilepath, req.body.data);
 
-    const deployResult = await exec(`gamma-cli deploy ${contractFilepath} -name ${contractName} -signer user1`);
+    await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
+
+    const deployResult = await exec(`gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`);
     console.log(deployResult.stdout);
     console.log(deployResult.stderr);
 
