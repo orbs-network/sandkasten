@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/hex"
+	"encoding/json"
+)
 import "github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 
 type stateRevision map[string]interface{}
@@ -40,7 +43,8 @@ func _mutateState(key []byte, value interface{}) {
 		}
 	}
 
-	newState[string(key)] = value
+	hexKey := hex.EncodeToString(key)
+	newState[hexKey] = value
 
 	_setStates(append(states, newState))
 }
@@ -57,6 +61,7 @@ func _getStates() (states stateRevisions) {
 	if err := json.Unmarshal(_readStates(), &states); err != nil {
 		panic(err)
 	}
+
 	return
 }
 
@@ -69,5 +74,25 @@ func _readStates() []byte {
 }
 
 func goebbelsReadProxiedState() []byte {
-	return _readStates()
+	hexStates := _getStates()
+	var rawStates stateRevisions
+
+	for _, state := range hexStates {
+		newState := make(stateRevision)
+		for k, v := range state {
+			decodedKey, err := hex.DecodeString(k)
+			if err != nil {
+				panic(err)
+			}
+			newState[string(decodedKey)] = v
+			rawStates = append(rawStates, newState)
+		}
+	}
+
+	rawStatesJson, err := json.Marshal(rawStates)
+	if err != nil {
+		panic(err)
+	}
+
+	return rawStatesJson
 }
