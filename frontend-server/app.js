@@ -20,7 +20,7 @@ app.use(require('body-parser').json());
 
 app.post('/api/send', async (req, res) => {
     const incomingJson = {
-        type: 'query',
+        type: 'tx',
         contractName: req.body.contractName,
         method: 'add',
         args: [
@@ -38,14 +38,14 @@ app.post('/api/send', async (req, res) => {
         Arguments: incomingJson.args.map((anArg) => {
             return {
                 Type: anArg.type,
-                Value: anArg.value,
+                Value: anArg.value.toString(),
             };
         })
     };
 
     const requestJsonFilepath = `/tmp/${uuid()}.json`;
 
-    await writeFile(requestJsonFilepath, requestJsonObject);
+    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
     const requiredCallType = (incomingJson.type === 'tx') ? 'send-tx' : 'run-query';
 
     try {
@@ -53,13 +53,13 @@ app.post('/api/send', async (req, res) => {
         console.log(callResult.stdout);
         res.json({
             ok: true,
-            result: callResult.stdout,
+            result: JSON.parse(callResult.stdout),
         });
     } catch (err) {
-        console.log(callResult.stderr);
+        console.log(err);
         res.json({
             ok: false,
-            result: callResult.stderr,
+            result: err,
         });
     }
 
