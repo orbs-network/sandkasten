@@ -10,59 +10,60 @@ const Inspector = ({ contractName, methods, onUpdateStateView }) => {
 
   const [state, setState] = useState({});
 
-  const execute = (methodName, args = []) => {
-    axios.post(`${basePath}/api/execute`, {
+  const execute = async (methodName, args) => {
+    const { data } = await axios.post(`${basePath}/api/execute`, {
       type: 'tx',
       contractName,
       method: methodName,
-      args
-    }).then(onUpdateStateView)
+      args: args || []
+    });
+    onUpdateStateView(data);
+    const newState = { ...state };
+    if (data.result.OutputArguments.length) {
+      newState[methodName].result = data.result.OutputArguments[0].Value;
+    }
+    setState(newState);
   };
 
   useEffect(() => {
     const newState = methods.reduce((acc, curr) => {
       acc[curr.methodName] = curr;
+      if (curr.args) {
+        acc[curr.methodName].args = curr.args.map(a => ({ name: a.Name, type: a.Type, value: null }));
+      } else {
+        acc[curr.methodName].args = [];
+      }
       acc[curr.methodName].result = null;
       return acc;
     }, {});
+    console.log(newState);
     setState(newState);
   }, [methods]);
 
-  const testCall = () => {
-    axios.post(`${basePath}/api/execute`, {
-      type: 'tx',
-      contractName,
-      method: 'add',
-      args: [{
-        value: 5,
-        type: 'uint64'
-      }]
-    }).then(onUpdateStateView);
-  };
+  const setArgValue = (methodName, argIndex, value) => {
+    const newState = { ...state };
+    newState[methodName].args[argIndex].value = value;
+    setState(newState);
+  }
 
   const renderMethod = ({ methodName, args, result }) => {
     return (
       <Card key={methodName}>
         <CardContent>
-          <Button onClick={testCall}>Add 5</Button>
-        </CardContent>
-        <CardContent>
           <Typography variant="h5" component="h2">
             {methodName} {' '}
             <Button
-              onClick={() => execute(methodName)}
+              onClick={() => execute(methodName, args)}
               variant="contained"
               color="secondary"
               size="small">Execute</Button>
           </Typography>
 
           {!!args && args.map((arg, idx) => <Typography>
-            <TextField key={idx} label={arg.Name} placeholder={arg.Type} />
+            <TextField onChange={(ev) => setArgValue(methodName, idx, ev.target.value)} key={idx} label={arg.Name} placeholder={arg.Type} />
           </Typography>)}
         </CardContent>
-        <CardActions>
-          {result}
-        </CardActions>
+        <Typography variant="h6">{result}</Typography>
       </Card>
     )
   }
