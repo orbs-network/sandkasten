@@ -11,11 +11,14 @@ const ContractState = ({ contractName }) => {
         contractName
       }
     });
-    setState(data);
+    setState(data.result);
   };
   return (
     <>
       <button onClick={getState}>Get State</button>
+      <div>
+        <code>{JSON.stringify(state)}</code>
+      </div>
     </>
   )
 };
