@@ -85,8 +85,8 @@ func goebbelsReadProxiedState() []byte {
 				panic(err)
 			}
 			newState[string(decodedKey)] = v
-			rawStates = append(rawStates, newState)
 		}
+		rawStates = append(rawStates, newState)
 	}
 
 	rawStatesJson, err := json.Marshal(rawStates)

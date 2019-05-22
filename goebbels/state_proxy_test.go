@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"github.com/orbs-network/orbs-contract-sdk/go/testing/unit"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -82,5 +83,23 @@ func TestStateKeysWithWeirdByteValues(t *testing.T) {
 
 		require.EqualValues(t, 1, s0["7ec33f886a0e60a29d4ff9a6c9b33af8f0e217d4"], "state 0 did not contain expected value")
 		require.EqualValues(t, 2, s1["7ec33f886a0e60a29d4ff9a6c9b33af8f0e217d4"], "state 1 did not contain expected value")
+	})
+}
+
+
+func TestExport(t *testing.T) {
+	unit.InServiceScope([]byte{}, []byte{}, func(mockery unit.Mockery) {
+
+
+		_mutateState([]byte("A"), 1)
+		_mutateState([]byte("B"), 2)
+		_mutateState([]byte("A"), 3)
+
+		rawData := goebbelsReadProxiedState()
+		var rawStates stateRevisions
+
+		err := json.Unmarshal(rawData, &rawStates)
+		require.NoError(t, err, "unmarshal failed for exported states")
+		require.Len(t, rawStates, 3, "expecting three states in this test")
 	})
 }
