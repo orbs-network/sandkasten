@@ -35,7 +35,7 @@ class ContractManager {
     async discoverContract({ contractName }) {
         const contractFilepath = `/tmp/${contractName}.go`;
 
-        const result = await exec(`go run gestapo.go -contract ${contractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
+        const result = await exec(`go run gestapo.go -contract ${contractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'gestapo') });
         return result.stderr;
     }
 

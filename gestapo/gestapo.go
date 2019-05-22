@@ -1,4 +1,4 @@
-package main
+package gestapo
 
 import (
 	"encoding/json"
