@@ -7,6 +7,10 @@ const { exec } = require('child-process-promise');
 const writeFile = util.promisify(fs.writeFile);
 const uuid = require('uuid');
 const path = require('path');
+const { decodeHex } = require('orbs-client-sdk');
+
+const { StringDecoder } = require('string_decoder');
+const decoder = new StringDecoder('utf8');
 
 var corsOption = {
     origin: true,
@@ -84,9 +88,11 @@ app.get('/api/state', async (req, res) => {
     try {
         const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
         console.log(callResult.stdout);
+        const responseFromBlockchain = JSON.parse(callResult.stdout);
+
         res.json({
             ok: true,
-            result: JSON.parse(callResult.stdout),
+            result: JSON.parse(Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString()),
         });
     } catch (err) {
         console.log(err);
@@ -99,8 +105,21 @@ app.get('/api/state', async (req, res) => {
     res.end();
 });
 
-app.post('/api/deploy', async (req, res) => {
+app.get('/api/discover/contract', async (req, res) => {
+    const contractName = req.query.contractName;
+    const contractFilepath = `/tmp/${contractName}.go`;
 
+    const result = await exec(`go run gestapo.go -contract ${contractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
+    const gammaResponse = result.stderr;
+
+    res.json({
+        ok: true,
+        data: JSON.parse(gammaResponse)
+    });
+    res.end();
+});
+
+app.post('/api/deploy', async (req, res) => {
     const assignedUid = uuid();
     const contractName = `contract_${assignedUid}`;
     const contractFilepath = `/tmp/${contractName}.go`;

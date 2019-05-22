@@ -5,7 +5,7 @@ const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://loc
 
 const Inspector = ({ contractName, methods }) => {
 
-  const execute = () => {
+  const testCall = () => {
     axios.post(`${basePath}/api/send`, {
       type: 'query',
       contractName,
@@ -16,11 +16,28 @@ const Inspector = ({ contractName, methods }) => {
       }]
     })
   };
+
+  const execute = (methodName) => {
+  
+  };
+  const renderMethod = ({methodName, args}) => {
+    return (
+      <div key={methodName}>
+        <p>Method name: <code>{methodName}</code></p>
+        <ul>
+          {args.map((arg, idx) => <li key={idx}>
+            <p>{arg.name} <input type="text" /></p>
+          </li>)}
+        </ul>
+        <button onClick={() => execute(methodName)}>Execute</button>
+      </div>
+    )
+  }
   return (
     <>
-      <div>Hello Inspector</div>
       <p>Contract Name: {contractName}</p>
-      <button onClick={execute}>Test</button>
+      <button onClick={testCall}>Test</button>
+      {methods.map(m => renderMethod(m))}
     </>
   );
 };
