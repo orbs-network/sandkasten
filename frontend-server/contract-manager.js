@@ -16,16 +16,16 @@ class ContractManager {
         const contractFile = this.files.load(testContractFileName.substring(0, testContractFileName.indexOf("_test")));
         const testFile = this.files.load(`${testContractFileName}`);
 
-        const tmpDir = await tmp.dir({unsafeCleanup: true});
+        const tmpDir = await tmp.dir({ unsafeCleanup: true });
 
         await writeFile(`${path.join(tmpDir.path, contractFile.name)}.go`, contractFile.code);
         await writeFile(`${path.join(tmpDir.path, testFile.name)}.go`, testFile.code);
 
         try {
-            const {stdout, stderr} = await exec(`go test -v`, { cwd: tmpDir.path});
-            return {stdout, stderr, success: true};
-        } catch ({stdout, stderr}) {
-            return {stdout, stderr, success: false};
+            const { stdout, stderr } = await exec(`go test -v`, { cwd: tmpDir.path });
+            return { stdout, stderr, success: true };
+        } catch ({ stdout, stderr }) {
+            return { stdout, stderr, success: false };
         } finally {
             tmpDir.cleanup();
         }
@@ -86,8 +86,13 @@ class ContractManager {
         await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
 
         const deployResult = await exec(`gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`);
-        console.log(deployResult.stdout);
-        console.log(deployResult.stderr);
+
+        const gammaResultJson = JSON.parse(deployResult.stdout);
+        if (gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
+            return { ok: false, gammaResultJson };
+        }
+        console.log('stdout: ', deployResult.stdout);
+        console.log('stderr: ', deployResult.stderr);
 
         const gammaResponse = await this.discoverContract({ contractName });
         const stateJson = await this.getContractState({ contractName });
@@ -96,10 +101,10 @@ class ContractManager {
         file.lastContractIdInGamma = contractName;
         this.files.save(file);
 
-        return {contractName, methods, stateJson}
+        return { ok: true, contractName, methods, stateJson, gammaResultJson };
     }
 
-    async callGammaServer({type, contractName, method, args}) {
+    async callGammaServer({ type, contractName, method, args }) {
         // Generate the json for sending the request
         const requestJsonObject = {
             ContractName: contractName,
@@ -123,7 +128,7 @@ class ContractManager {
         const stateJson = await this.getContractState({ contractName });
         const gammaOutput = JSON.parse(gammaOutputJson);
 
-        return {stateJson, gammaOutput};
+        return { stateJson, gammaOutput };
     }
 }
 

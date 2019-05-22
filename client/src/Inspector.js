@@ -104,13 +104,11 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes }) => {
   const renderMethod = ({ methodName, args, result, inflight }, index) => {
     let resultConsoleElem;
 
-    console.log('inflight value', inflight);
     if (inflight) {
       resultConsoleElem = (<React.Fragment>
         <CircularProgress className={classes.progress} color="secondary" />
       </React.Fragment>);
     } else {
-      console.log('result is: ', result);
       if (result !== null) {
         resultConsoleElem = (<Paper className={classes.resultConsole}>{result}</Paper>);
       }
