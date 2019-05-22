@@ -2,10 +2,23 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
 
+var requiredImports = []string {
+	"bytes",
+	"encoding/gob",
+	"encoding/hex",
+	"encoding/json",
+	"errors",
+	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/events",
+	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state",
+	"reflect",
+	"runtime",
+	"strings",
+}
 
 // usage: go run goebbels.go -contract <input-contract.go> -output <decorated-contract.go>
 func main() {
@@ -33,37 +46,52 @@ func main() {
 }
 
 func decorate(undecorated string) string {
-	decorated := replaceAllStateWritesWithProxy(undecorated)
+	decoratedWithState := replaceAllStateWritesWithProxy(undecorated)
+	decoratedWithEvents := replaceAllEmitEventWithProxy(decoratedWithState)
 
-	decorated = injectInstrumentationCode(decorated) // appends code and adds it to PUBLIC
+	decoratedWithTheNazi := injectInstrumentationCode(decoratedWithEvents) // appends code and adds it to PUBLIC
 
-	return decorated
+	return decoratedWithTheNazi
 }
 
 func injectInstrumentationCode(decorated string) string {
 	withPublic := strings.Replace(decorated,
 		"var PUBLIC = sdk.Export(",
-		"var PUBLIC = sdk.Export(goebbelsReadProxiedState, ",
+		"var PUBLIC = sdk.Export(goebbelsReadProxiedState, goebbelsReadProxiedEvents, ",
 		1)
 
-	withgoebbelsJsonImport := strings.Replace(withPublic,
-		"import (",
-		"import (\"encoding/json\"",
-		1)
+	withGoebbelsJsonImport := injectImports(withPublic)
 
-	f, err := ioutil.ReadFile("./state_proxy.go")
+	f, err := ioutil.ReadFile("./sdk_proxy.go")
 	if err != nil {
 		panic("could not find state proxy")
 	}
 	lines := strings.Split(string(f), "\n")
 
-	goebbelsWrites := strings.Join(lines[7:], "\n")
+	goebbelsWrites := strings.Join(lines[14:], "\n")
 
-	withgoebbelsJsonImport += goebbelsWrites
-	return withgoebbelsJsonImport
+	withGoebbelsJsonImport += goebbelsWrites
+	return withGoebbelsJsonImport
+}
+
+func injectImports(code string) string {
+	importStartLoc := strings.Index(code, "import (")
+	importEndLoc := strings.Index(code, ")")
+	for _, imp := range requiredImports {
+		loc := strings.Index(code, imp)
+		if loc == -1 || loc > importEndLoc || loc < importStartLoc {
+			// import string not in import block, inject
+			code = strings.Replace(code, "import (", fmt.Sprintf("import (\n\t\"%s\"", imp), 1)
+		}
+	}
+
+	return code
 }
 
 func replaceAllStateWritesWithProxy(code string) string {
 	return strings.Replace(code, "state.Write", "goebblesWrite", -1)
 }
 
+func replaceAllEmitEventWithProxy(code string) string {
+	return strings.Replace(code, "events.EmitEvent", "goebblesEmitEvent", -1)
+}
