@@ -6,6 +6,7 @@ const util = require('util');
 const { exec } = require('child-process-promise');
 const writeFile = util.promisify(fs.writeFile);
 const uuid = require('uuid');
+const path = require('path');
 
 var corsOption = {
     origin: true,
@@ -71,13 +72,15 @@ app.post('/api/deploy', async (req, res) => {
     const assignedUid = uuid();
     const contractName = `contract_${assignedUid}`;
     const contractFilepath = `/tmp/${contractName}.go`;
-
-    // TODO integrate with the Nazi biatch
+    const decoratedContractFilepath = `/tmp/${contractName}_decorated.go`;
+    
     // Write the contract somewhere
     console.log('writing the contract to file');
     await writeFile(contractFilepath, req.body.data);
 
-    const deployResult = await exec(`gamma-cli deploy ${contractFilepath} -name ${contractName} -signer user1`);
+    await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
+    
+    const deployResult = await exec(`gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`);
     console.log(deployResult.stdout);
     console.log(deployResult.stderr);
 
