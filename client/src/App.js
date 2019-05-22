@@ -131,6 +131,7 @@ const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://loc
 class App extends React.Component {
   state = {
     open: false,
+    contractState: {},
     contractName: ''
   };
 
@@ -150,10 +151,16 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { methods }));
   }
 
+  setContractState(state) {
+    this.contractState = state;
+  }
+
   async deploymentHandler(code) {
     const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
-    const { contractName } = data;
+    const { contractName, stateJson, methods } = data;
     this.setContractName(contractName);
+    this.setMethods(methods);
+    this.setContractState(stateJson);
   };
 
   render() {
