@@ -1,5 +1,5 @@
 {
   "ContractName": "MyCounter",
-  "MethodName": "get",
+  "MethodName": "goebbelsReadProxiedState",
   "Arguments": []
 }

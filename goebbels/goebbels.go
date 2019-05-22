@@ -1,19 +1,35 @@
 package main
 
 import (
+	"flag"
 	"io/ioutil"
 	"strings"
 )
 
+
+// usage: go run goebbels.go -contract <input-contract.go> -output <decorated-contract.go>
 func main() {
-	code,err := ioutil.ReadFile("counter.go")
+	contractFileName := flag.String("contract", "", "path to contract file to decorate")
+	outFileName := flag.String("output", "", "path to output file")
+
+	flag.Parse()
+
+	if *contractFileName == "" {
+		panic("input contract name not set")
+	}
+
+	if *outFileName == "" {
+		panic("output contract name not set")
+	}
+
+	code,err := ioutil.ReadFile(*contractFileName)
 	if err != nil {
 		panic("cannot find orbs code")
 	}
 
-	withgoe := decorate(string(code))
-
-	ioutil.WriteFile("./decorated_counter.go", []byte(withgoe), 0644)
+	if err = ioutil.WriteFile(*outFileName, []byte(decorate(string(code))), 0644); err != nil {
+		panic(err)
+	}
 }
 
 func decorate(undecorated string) string {
