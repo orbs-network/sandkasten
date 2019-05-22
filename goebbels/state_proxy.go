@@ -32,7 +32,7 @@ func _mutateState(key []byte, value interface{}) {
 
 	newState := make(stateRevision)
 
-	states := getStates()
+	states := _getStates()
 	if len(states) > 0 {
 		lastState := states[len(states)-1]
 		for k, v := range lastState {
@@ -42,10 +42,10 @@ func _mutateState(key []byte, value interface{}) {
 
 	newState[string(key)] = value
 
-	setStates(append(states, newState))
+	_setStates(append(states, newState))
 }
 
-func setStates(revisions stateRevisions) {
+func _setStates(revisions stateRevisions) {
 	stateJson, err := json.Marshal(revisions)
 	if err != nil {
 		panic(err)
@@ -53,14 +53,14 @@ func setStates(revisions stateRevisions) {
 	state.WriteBytes(STATES_KEY, stateJson)
 }
 
-func getStates() (states stateRevisions) {
-	if err := json.Unmarshal(readStates(), &states); err != nil {
+func _getStates() (states stateRevisions) {
+	if err := json.Unmarshal(_readStates(), &states); err != nil {
 		panic(err)
 	}
 	return
 }
 
-func readStates() []byte {
+func _readStates() []byte {
 	if bytes := state.ReadBytes(STATES_KEY); len(bytes) == 0 {
 		return []byte("null")
 	} else {
@@ -69,5 +69,5 @@ func readStates() []byte {
 }
 
 func goebbelsReadProxiedState() []byte {
-	return readStates()
+	return _readStates()
 }
