@@ -16,6 +16,13 @@ import InspectorIcon from '@material-ui/icons/Dns';
 import StateIcon from '@material-ui/icons/DeviceHub';
 import MenuIcon from '@material-ui/icons/Menu';
 
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 
@@ -50,6 +57,14 @@ const styles = theme => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
+  },
+  resultConsole: {
+    background: '#303030',
+    color: '#e8e8e8',
+    fontWeight: 400,
+    textAlign: 'left',
+    padding: 8,
+    margin: 16
   },
   appBarShift: {
     marginLeft: drawerWidth,
@@ -122,6 +137,9 @@ const styles = theme => ({
   h5: {
     marginBottom: theme.spacing.unit * 2,
   },
+  dialogOverides: {
+    maxWidth: 900,
+  },
 });
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
@@ -130,6 +148,10 @@ class App extends React.Component {
   state = {
     open: false,
     contractName: '',
+    dialogOpen: false,
+    lastDeploymentExecutionResult: '',
+    deploymentError: '',
+    ctaDisabled: false,
     contractState: [],
     methods: []
   };
@@ -142,6 +164,10 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { open: true }));
   };
 
+  setDeployCTAStatus(newStatus) {
+    this.setState(Object.assign({}, this.state, { ctaDisabled: newStatus }));
+  }
+
   handleDrawerClose = () => {
     this.setState(Object.assign({}, this.state, { open: false }));
   };
@@ -150,25 +176,54 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { methods }));
   }
 
-  onSetContractStateForInspector(axiosResponse) {
-    this.setContractState(axiosResponse.data.stateJson.result);
+  onSetContractStateForInspector(data) {
+    this.setContractState(data.stateJson.result);
   }
 
   setContractState(contractState) {
     this.setState(Object.assign({}, this.state, { contractState }));
   }
 
+  handleClose() {
+    this.setState(Object.assign({}, this.state, { dialogOpen: false }));
+  }
+
+  setDeploymentResult({ ExecutionResult, OutputArguments }) {
+    const deploymentError = OutputArguments[0].Value || '';
+
+    const dialogOpen = (ExecutionResult === 'ERROR_SMART_CONTRACT' && deploymentError.length > 0) ?
+      true : false;
+
+    this.setState(Object.assign({}, this.state, {
+      lastDeploymentExecutionResult: ExecutionResult,
+      dialogOpen,
+      deploymentError,
+    }));
+  }
+
   async deploymentHandler(code) {
+    this.setDeployCTAStatus(true);
     const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
-    const { contractName, stateJson, methods } = data;
-    this.setContractName(contractName);
-    this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
-    this.setContractState(stateJson.result);
+
+    this.setDeployCTAStatus(false);
+    if (data.gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
+      this.setDeploymentResult(data.gammaResultJson);
+    } else {
+      const { contractName, stateJson, methods } = data;
+      this.setContractName(contractName);
+      this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
+      this.setContractState(stateJson.result);
+    }
   };
 
   render() {
     const { classes } = this.props;
-    const { contractState } = this.state;
+    const {
+      contractState,
+      ctaDisabled,
+      dialogOpen,
+      lastDeploymentExecutionResult,
+      deploymentError } = this.state;
 
     return (
       <div className={classes.root}>
@@ -217,9 +272,29 @@ class App extends React.Component {
           <Divider />
           <List>{secondaryListItems}</List>
         </Drawer>
+
+        <Dialog
+          maxWidth={'900px'}
+          open={dialogOpen}
+          onClose={this.handleClose.bind(this)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Contract Deployment Failed</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              We couldn't deploy your contract because of the following error(s):
+              <Paper className={classes.resultConsole}>{deploymentError}</Paper>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleClose.bind(this)} color="primary">
+              Dismiss
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
-
           <Grid container spacing={24}>
             <Grid item xs={12} sm={6}>
               <Paper className={classes.paper}>
@@ -227,7 +302,7 @@ class App extends React.Component {
                   <CodeIcon className={classes.iconCommon} /> Code
                 </Typography>
                 <hr />
-                <Editor onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes.deployButton} />
+                <Editor lastDeploymentExecutionResult={lastDeploymentExecutionResult} deploymentError={deploymentError} ctaDisabled={ctaDisabled} onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes.deployButton} />
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>

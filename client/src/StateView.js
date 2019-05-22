@@ -33,7 +33,7 @@ const styles = {
 
 function StateView(props) {
   const { classes, data = [] } = props;
-  const emptyStateElem = (<TableRow><TableCell colspan={2} style={{ textAlign: 'center', color: '#a8a8a8' }}>State is empty</TableCell></TableRow>);
+  const emptyStateElem = (<TableRow><TableCell colSpan={2} style={{ textAlign: 'center', color: '#a8a8a8' }}>State is empty</TableCell></TableRow>);
   let stateRepresentationElements;
   if (data.length > 0) { // We have state tries
     const previousState = data[data.length - 2];
@@ -85,7 +85,7 @@ function StateView(props) {
 
 StateView.propTypes = {
   classes: PropTypes.object.isRequired,
-  data: PropTypes.object,
+  data: PropTypes.array.isRequired,
 };
 
 export default withStyles(styles)(StateView);

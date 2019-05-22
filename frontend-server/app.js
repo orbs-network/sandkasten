@@ -81,10 +81,11 @@ app.post('/api/deploy', async (req, res) => {
     file.code = req.body.data;
     files.save(file);
 
-    const {contractName, methods, stateJson} = await contracts.decorateAndDeploy(file);
+    const {ok, gammaResultJson, contractName, methods, stateJson} = await contracts.decorateAndDeploy(file);
 
     res.json({
-        ok: true,
+        ok,
+        gammaResultJson,
         contractName,
         methods,
         stateJson,
@@ -100,6 +101,17 @@ app.post('/api/deploy/:name', async (req, res) => {
         contractName,
         methods,
         stateJson,
+    });
+    res.end();
+});
+
+app.post('/api/test/:name', async (req, res) => {
+    const {stdout, success} = await contracts.runTest(req.params.name);
+
+    res.json({
+        ok: true,
+        allTestsPassed: success,
+        output: stdout,
     });
     res.end();
 });
