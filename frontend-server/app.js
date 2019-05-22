@@ -68,7 +68,7 @@ app.post('/api/send', async (req, res) => {
 });
 
 app.get('/api/state', async (req, res) => {
-    const contractName = req.params.contractName;
+    const contractName = req.query.contractName;
 
     // Generate the json for sending the request
     const requestJsonObject = {
