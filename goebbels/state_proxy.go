@@ -6,7 +6,7 @@ import "github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 type stateRevision map[string]interface{}
 type stateRevisions []stateRevision
 
-var states stateRevisions
+var STATES_KEY = []byte("Großdeutsches Reich")
 
 func goebblesWriteBytes(key []byte, value []byte) {
 	_mutateState(key, value)
@@ -29,20 +29,41 @@ func goebblesWriteUint64(key []byte, value uint64) {
 }
 
 func _mutateState(key []byte, value interface{}) {
+
 	newState := make(stateRevision)
 
+	states := getStates()
 	if len(states) > 0 {
-		lastState := states[len(states) - 1]
+		lastState := states[len(states)-1]
 		for k, v := range lastState {
 			newState[k] = v
 		}
 	}
 
 	newState[string(key)] = value
-	states = append(states, newState)
+
+	setStates(append(states, newState))
+}
+
+func setStates(revisions stateRevisions) {
+	stateJson, err := json.Marshal(revisions)
+	if err != nil {
+		panic(err)
+	}
+	state.WriteBytes(STATES_KEY, stateJson)
+}
+
+func getStates() (states stateRevisions) {
+	if err := json.Unmarshal(readStates(), states); err != nil {
+		panic(err)
+	}
+	return
+}
+
+func readStates() []byte {
+	return state.ReadBytes(STATES_KEY)
 }
 
 func goebbelsReadProxiedState() []byte {
-	j, _ := json.Marshal(states)
-	return j
+	return readStates()
 }
