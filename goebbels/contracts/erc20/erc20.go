@@ -4,7 +4,7 @@
 // This source code is licensed under the MIT license found in the LICENSE file in the root directory of this source tree.
 // The above notice should be included in all copies or substantial portions of the software.
 
-package main
+package erc20
 
 import (
 	"encoding/hex"
@@ -15,11 +15,11 @@ import (
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 )
 
-var PUBLIC1 = sdk.Export(totalSupply, balanceOf, allowance, increaseAllowance, decreaseAllowance, transfer, approve, transferFrom, symbol, name, decimals)
-var SYSTEM1 = sdk.Export(_init)
+var PUBLIC = sdk.Export(totalSupply, balanceOf, allowance, increaseAllowance, decreaseAllowance, transfer, approve, transferFrom, symbol, name, decimals)
+var SYSTEM = sdk.Export(_init)
 var EVENTS = sdk.Export(Approval, Transfer)
 
-func _init1() {
+func _init() {
 	state.WriteString([]byte("symbol"), "O20")
 	state.WriteString([]byte("name"), "OrbsERC20Token")
 	state.WriteUint32([]byte("decimals"), 18)

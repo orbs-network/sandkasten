@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
+	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 )
-import "github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 
 type stateRevision map[string]interface{}
 type stateRevisions []stateRevision
