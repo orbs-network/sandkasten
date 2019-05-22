@@ -16,7 +16,7 @@ const Inspector = ({ contractName, methods, onUpdateStateView }) => {
       contractName,
       method: methodName,
       args
-    })
+    }).then(onUpdateStateView)
   };
 
   useEffect(() => {
