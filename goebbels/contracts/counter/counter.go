@@ -1,4 +1,4 @@
-package counter
+package main
 
 import (
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1"
