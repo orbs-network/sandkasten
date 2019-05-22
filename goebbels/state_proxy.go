@@ -54,7 +54,7 @@ func setStates(revisions stateRevisions) {
 }
 
 func getStates() (states stateRevisions) {
-	if err := json.Unmarshal(readStates(), states); err != nil {
+	if err := json.Unmarshal(readStates(), &states); err != nil {
 		panic(err)
 	}
 	return
@@ -62,7 +62,7 @@ func getStates() (states stateRevisions) {
 
 func readStates() []byte {
 	if bytes := state.ReadBytes(STATES_KEY); len(bytes) == 0 {
-		return []byte("{}")
+		return []byte("null")
 	} else {
 		return bytes
 	}

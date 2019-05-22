@@ -8,6 +8,12 @@ import (
 
 func TestEmptyStateReturnsEmptyJson(t *testing.T) {
 	unit.InServiceScope([]byte{}, []byte{}, func(mockery unit.Mockery) {
-		require.Equal(t, []byte("{}"), readStates(), "initial state wasn't an empty json")
+		require.Equal(t, []byte("null"), readStates(), "initial state wasn't an empty json")
+	})
+}
+
+func TestEmptyStateIsAnEmptySlice(t *testing.T) {
+	unit.InServiceScope([]byte{}, []byte{}, func(mockery unit.Mockery) {
+		require.Nil(t, getStates(), "initial state wasn't empty")
 	})
 }
