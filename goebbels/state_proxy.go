@@ -61,7 +61,11 @@ func getStates() (states stateRevisions) {
 }
 
 func readStates() []byte {
-	return state.ReadBytes(STATES_KEY)
+	if bytes := state.ReadBytes(STATES_KEY); len(bytes) == 0 {
+		return []byte("{}")
+	} else {
+		return bytes
+	}
 }
 
 func goebbelsReadProxiedState() []byte {
