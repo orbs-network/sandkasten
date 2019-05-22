@@ -8,6 +8,7 @@ const writeFile = util.promisify(fs.writeFile);
 const uuid = require('uuid');
 const path = require('path');
 const { decodeHex } = require('orbs-client-sdk');
+const { FileManager } = require('./file-manager');
 
 var corsOption = {
     origin: true,
@@ -19,6 +20,8 @@ var corsOption = {
 const app = express();
 app.use(require('cors')(corsOption));
 app.use(require('body-parser').json());
+
+const files = new FileManager()
 
 async function discoverContract({ contractName }) {
     const contractFilepath = `/tmp/${contractName}.go`;
@@ -60,6 +63,44 @@ async function getContractState({ contractName }) {
 
     return returnValue;
 }
+
+async function decorateAndDeploy(code) {
+    const assignedUid = uuid();
+    const contractName = `contract_${assignedUid}`;
+    const contractFilepath = `/tmp/${contractName}.go`;
+    const decoratedContractFilepath = `/tmp/${contractName}_decorated.go`;
+
+    // Write the contract somewhere
+    console.log('writing the contract to file');
+    await writeFile(contractFilepath, code);
+
+    await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
+
+    const deployResult = await exec(`gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`);
+    console.log(deployResult.stdout);
+    console.log(deployResult.stderr);
+
+    const gammaResponse = await discoverContract({ contractName });
+    const stateJson = await getContractState({ contractName });
+    const methods = JSON.parse(gammaResponse);
+
+    return {contractName, methods, stateJson}
+}
+
+app.get('/api/files', async (req, res) => {
+    res.json(files.list())
+    res.end();
+});
+
+app.get('/api/files/:name', async (req, res) => {
+    res.json(files.load(req.params.name))
+    res.end();
+});
+
+app.post('/api/files/:name', async (req, res) => {
+    res.json(files.save(req.params.name, req.body.data))
+    res.end();
+});
 
 app.post('/api/send', async (req, res) => {
     const incomingJson = {
@@ -129,28 +170,30 @@ app.get('/api/discover/contract', async (req, res) => {
 });
 
 app.post('/api/deploy', async (req, res) => {
-    const assignedUid = uuid();
-    const contractName = `contract_${assignedUid}`;
-    const contractFilepath = `/tmp/${contractName}.go`;
-    const decoratedContractFilepath = `/tmp/${contractName}_decorated.go`;
+    files.save("THE_ONE_AND_ONLY_FILE", req.body.data)
 
-    // Write the contract somewhere
-    console.log('writing the contract to file');
-    await writeFile(contractFilepath, req.body.data);
+    const file = files.load("THE_ONE_AND_ONLY_FILE")
 
-    await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
-
-    const deployResult = await exec(`gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`);
-    console.log(deployResult.stdout);
-    console.log(deployResult.stderr);
-
-    const gammaResponse = await discoverContract({ contractName });
-    const stateJson = await getContractState({ contractName });
+    const {contractName, methods, stateJson} = await decorateAndDeploy(file.code)
 
     res.json({
         ok: true,
         contractName,
-        methods: JSON.parse(gammaResponse),
+        methods,
+        stateJson,
+    });
+    res.end();
+});
+
+app.post('/api/deploy/:name', async (req, res) => {
+    const code = files.load(req.params.name)
+
+    const {contractName, methods, stateJson} = decorateAndDeploy(code)
+
+    res.json({
+        ok: true,
+        contractName,
+        methods,
         stateJson,
     });
     res.end();
