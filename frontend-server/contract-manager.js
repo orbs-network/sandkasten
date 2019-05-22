@@ -5,10 +5,31 @@ const writeFile = util.promisify(fs.writeFile);
 const uuid = require('uuid');
 const path = require('path');
 const { decodeHex } = require('orbs-client-sdk');
+const tmp = require('tmp-promise');
 
 class ContractManager {
     constructor(files) {
         this.files = files;
+    }
+
+    async runTest(testContractFileName) {
+        const contractFile = this.files.load(testContractFileName.substring(0, testContractFileName.indexOf("_test")));
+        const testFile = this.files.load(`${testContractFileName}`);
+
+        const tmpDir = await tmp.dir({unsafeCleanup: true});
+
+        await writeFile(`${path.join(tmpDir.path, contractFile.name)}.go`, contractFile.code);
+        await writeFile(`${path.join(tmpDir.path, testFile.name)}.go`, testFile.code);
+
+        try {
+            const {stdout, stderr} = await exec(`go test -v`, { cwd: tmpDir.path});
+            return {stdout, stderr, success: true};
+        } catch ({stdout, stderr}) {
+            return {stdout, stderr, success: false};
+        } finally {
+            tmpDir.cleanup();
+        }
+
     }
 
     async discoverContract({ contractName }) {
