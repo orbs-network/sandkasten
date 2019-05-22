@@ -36,4 +36,4 @@ class File {
 
 module.exports = {
     FileManager,
-}
+};
