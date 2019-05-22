@@ -9,9 +9,6 @@ const uuid = require('uuid');
 const path = require('path');
 const { decodeHex } = require('orbs-client-sdk');
 
-const { StringDecoder } = require('string_decoder');
-const decoder = new StringDecoder('utf8');
-
 var corsOption = {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -22,6 +19,47 @@ var corsOption = {
 const app = express();
 app.use(require('cors')(corsOption));
 app.use(require('body-parser').json());
+
+async function discoverContract({ contractName }) {
+    const contractFilepath = `/tmp/${contractName}.go`;
+
+    const result = await exec(`go run gestapo.go -contract ${contractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
+    return result.stderr;
+}
+
+async function getContractState({ contractName }) {
+    let returnValue;
+    // Generate the json for sending the request
+    const requestJsonObject = {
+        ContractName: contractName,
+        MethodName: 'goebbelsReadProxiedState',
+        Arguments: []
+    };
+
+    const requestJsonFilepath = `/tmp/inspect_state.json`;
+    await exec(`rm -f ${requestJsonFilepath}`);
+    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
+
+    try {
+        const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
+        console.log(callResult.stdout);
+        const responseFromBlockchain = JSON.parse(callResult.stdout);
+
+        returnValue = {
+            ok: true,
+            result: JSON.parse(Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString()),
+        };
+
+    } catch (err) {
+        console.log(err);
+        returnValue = {
+            ok: false,
+            result: err,
+        };
+    }
+
+    return returnValue;
+}
 
 app.post('/api/send', async (req, res) => {
     const incomingJson = {
@@ -73,44 +111,15 @@ app.post('/api/send', async (req, res) => {
 
 app.get('/api/state', async (req, res) => {
     const contractName = req.query.contractName;
+    const returnJson = await getContractState({ contractName });
 
-    // Generate the json for sending the request
-    const requestJsonObject = {
-        ContractName: contractName,
-        MethodName: 'goebbelsReadProxiedState',
-        Arguments: []
-    };
-
-    const requestJsonFilepath = `/tmp/inspect_state.json`;
-    await exec(`rm -f ${requestJsonFilepath}`);
-    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
-
-    try {
-        const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
-        console.log(callResult.stdout);
-        const responseFromBlockchain = JSON.parse(callResult.stdout);
-
-        res.json({
-            ok: true,
-            result: JSON.parse(Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString()),
-        });
-    } catch (err) {
-        console.log(err);
-        res.json({
-            ok: false,
-            result: err,
-        });
-    }
-
+    res.json(returnJson);
     res.end();
 });
 
 app.get('/api/discover/contract', async (req, res) => {
     const contractName = req.query.contractName;
-    const contractFilepath = `/tmp/${contractName}.go`;
-
-    const result = await exec(`go run gestapo.go -contract ${contractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
-    const gammaResponse = result.stderr;
+    const gammaResponse = await discoverContract({ contractName });
 
     res.json({
         ok: true,
@@ -135,9 +144,14 @@ app.post('/api/deploy', async (req, res) => {
     console.log(deployResult.stdout);
     console.log(deployResult.stderr);
 
+    const gammaResponse = await discoverContract({ contractName });
+    const stateJson = await getContractState({ contractName });
+
     res.json({
         ok: true,
         contractName,
+        methods: JSON.parse(gammaResponse),
+        stateJson,
     });
     res.end();
 });
