@@ -150,6 +150,10 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { methods }));
   }
 
+  onSetContractStateForInspector(axiosResponse) {
+    this.setContractState(axiosResponse.data.stateJson.result);
+  }
+
   setContractState(contractState) {
     this.setState(Object.assign({}, this.state, { contractState }));
   }
@@ -192,7 +196,7 @@ class App extends React.Component {
               noWrap
               className={classes.title}
             >
-              Orbs Smart Contracts Playground
+              örbs Sandkasten
             </Typography>
           </Toolbar>
         </AppBar>
@@ -232,7 +236,7 @@ class App extends React.Component {
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
                 <hr />
-                <Inspector onUpdateStateView={this.setContractState.bind(this)} contractName={this.state.contractName} methods={this.state.methods} />
+                <Inspector onUpdateStateView={this.onSetContractStateForInspector.bind(this)} contractName={this.state.contractName} methods={this.state.methods} />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>
