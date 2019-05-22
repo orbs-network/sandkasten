@@ -67,19 +67,51 @@ app.post('/api/send', async (req, res) => {
     res.end();
 });
 
+app.get('/api/state', async (req, res) => {
+    const contractName = req.params.contractName;
+
+    // Generate the json for sending the request
+    const requestJsonObject = {
+        ContractName: contractName,
+        MethodName: 'goebbelsReadProxiedState',
+        Arguments: []
+    };
+
+    const requestJsonFilepath = `/tmp/inspect_state.json`;
+    await exec(`rm -f ${requestJsonFilepath}`);
+    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
+
+    try {
+        const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
+        console.log(callResult.stdout);
+        res.json({
+            ok: true,
+            result: JSON.parse(callResult.stdout),
+        });
+    } catch (err) {
+        console.log(err);
+        res.json({
+            ok: false,
+            result: err,
+        });
+    }
+
+    res.end();
+});
+
 app.post('/api/deploy', async (req, res) => {
 
     const assignedUid = uuid();
     const contractName = `contract_${assignedUid}`;
     const contractFilepath = `/tmp/${contractName}.go`;
     const decoratedContractFilepath = `/tmp/${contractName}_decorated.go`;
-    
+
     // Write the contract somewhere
     console.log('writing the contract to file');
     await writeFile(contractFilepath, req.body.data);
 
     await exec(`go run goebbels.go -contract ${contractFilepath} -output ${decoratedContractFilepath}`, { cwd: path.join(path.dirname(__dirname), 'goebbels') });
-    
+
     const deployResult = await exec(`gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`);
     console.log(deployResult.stdout);
     console.log(deployResult.stderr);
