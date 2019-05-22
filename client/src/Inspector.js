@@ -28,9 +28,24 @@ const Inspector = ({ contractName, methods, onUpdateStateView }) => {
     setState(newState);
   }, [methods]);
 
+  const testCall = () => {
+    axios.post(`${basePath}/api/execute`, {
+      type: 'tx',
+      contractName,
+      method: 'add',
+      args: [{
+        value: 5,
+        type: 'uint64'
+      }]
+    }).then(onUpdateStateView);
+  };
+
   const renderMethod = ({ methodName, args, result }) => {
     return (
       <Card key={methodName}>
+        <CardContent>
+          <Button onClick={testCall}>Add 5</Button>
+        </CardContent>
         <CardContent>
           <Typography variant="h5" component="h2">
             {methodName} {' '}
