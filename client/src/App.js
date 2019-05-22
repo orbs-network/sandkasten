@@ -13,7 +13,6 @@ import IconButton from '@material-ui/core/IconButton';
 import Badge from '@material-ui/core/Badge';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import CodeIcon from '@material-ui/icons/Code';
 import InspectorIcon from '@material-ui/icons/Dns';
 import StateIcon from '@material-ui/icons/DeviceHub';
@@ -131,7 +130,8 @@ const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://loc
 class App extends React.Component {
   state = {
     open: false,
-    contractName: ''
+    contractName: '',
+    methods: []
   };
 
   setContractName(contractName) {
@@ -187,11 +187,6 @@ class App extends React.Component {
             >
               Orbs Smart Contracts Playground
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -220,7 +215,7 @@ class App extends React.Component {
                 <Typography variant="h5" component="h3">
                   <CodeIcon className={classes.iconCommon} /> Code
                 </Typography>
-
+                <hr />
                 <Editor onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes.deployButton} />
               </Paper>
             </Grid>
@@ -229,12 +224,15 @@ class App extends React.Component {
                 <Typography variant="h5" component="h3">
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
+                <hr />
+                <Inspector contractName={this.state.contractName} methods={this.state.methods} />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>
                 <Typography variant="h5" component="h3">
                   <StateIcon className={classes.iconCommon} /> State view
                 </Typography>
+                <hr />
               </Paper>
             </Grid>
           </Grid>
