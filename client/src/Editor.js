@@ -15,7 +15,7 @@ class Editor extends React.Component {
 
 
   saveHandler() {
-
+    this.props.onSave(this.editorInstance.getValue());
   }
 
   componentDidMount() {
@@ -43,7 +43,7 @@ class Editor extends React.Component {
         >
           Save
         </Button>
-        <Button
+        {!this.props.file.name.endsWith('_test') && <Button
           disabled={ctaDisabled}
           className={buttonClasses.deployButton}
           variant="contained"
@@ -51,7 +51,15 @@ class Editor extends React.Component {
           onClick={this.deployHandler.bind(this)}
         >
           Deploy
-        </Button>
+        </Button>}
+        {this.props.file.name.endsWith('_test') && <Button
+          disabled={ctaDisabled}
+          className={buttonClasses.deployButton}
+          variant="contained"
+          color="primary"
+        >
+          Test
+        </Button>}
         <article ref={this.editorRef} style={{ marginTop: 16, height: 580 }}></article>
       </React.Fragment>
     )
