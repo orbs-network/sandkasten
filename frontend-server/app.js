@@ -48,12 +48,12 @@ app.post('/api/files/:name', async (req, res) => {
 });
 
 app.post('/api/execute', async (req, res) => {
-
     try {
-        const {stateJson, gammaOutput} = await contracts.callGammaServer(req.body);
+        const { stateJson, eventsJson, gammaOutput } = await contracts.callGammaServer(req.body);
 
         res.json({
             ok: true,
+            eventsJson,
             stateJson,
             result: gammaOutput,
         });
@@ -77,6 +77,14 @@ app.get('/api/state', async (req, res) => {
     res.end();
 });
 
+app.get('/api/events', async (req, res) => {
+    const contractName = req.query.contractName;
+    const returnJson = await contracts.getContractEvents({ contractName });
+
+    res.json(returnJson);
+    res.end();
+});
+
 app.get('/api/discover/contract', async (req, res) => {
     const contractName = req.query.contractName;
     const gammaResponse = await contracts.discoverContract({ contractName });
@@ -93,11 +101,12 @@ app.post('/api/deploy', async (req, res) => {
     file.code = req.body.data;
     files.save(file);
 
-    const {ok, gammaResultJson, contractName, methods, stateJson} = await contracts.decorateAndDeploy(file);
+    const { ok, gammaResultJson, contractName, methods, stateJson, eventsJson } = await contracts.decorateAndDeploy(file);
 
     res.json({
         ok,
         gammaResultJson,
+        eventsJson,
         contractName,
         methods,
         stateJson,
@@ -106,11 +115,12 @@ app.post('/api/deploy', async (req, res) => {
 });
 
 app.post('/api/deploy/:name', async (req, res) => {
-    const {contractName, methods, stateJson, gammaResultJson} = await contracts.decorateAndDeploy(files.load(req.params.name))
+    const { contractName, methods, stateJson, gammaResultJson, eventsJson } = await contracts.decorateAndDeploy(files.load(req.params.name))
 
     res.json({
         ok: true,
         gammaResultJson,
+        eventsJson,
         contractName,
         methods,
         stateJson,
