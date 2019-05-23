@@ -50,7 +50,10 @@ class App extends React.Component {
     contractEvents: [],
     methods: [],
     files: {},
-    currentFile: {}
+    currentFile: {
+      name: '',
+      code: ''
+    }
   };
 
   setContractName(contractName) {
@@ -104,7 +107,8 @@ class App extends React.Component {
 
   async deploymentHandler(code) {
     this.setDeployCTAStatus(true);
-    const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
+    const { currentFile } = this.state;
+    const { data } = await axios.post(`${basePath}/api/deploy/${currentFile.name}`, { data: code });
 
     this.setDeployCTAStatus(false);
     if (data.gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
@@ -118,6 +122,12 @@ class App extends React.Component {
       this.setContractState(stateJson.result);
     }
   };
+
+  async saveHandler(code) {
+    const newState = { ...this.state };
+    newState.currentFile.code = code;
+    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, { data: newState.currentFile.code });
+  }
 
   fileClickHandler(fileName) {
     const newState = { ...this.state };
@@ -228,10 +238,17 @@ class App extends React.Component {
             <Grid item xs={12} sm={6}>
               <Paper className={classes.paper}>
                 <Typography variant="h5" component="h3">
-                  <CodeIcon className={classes.iconCommon} /> Code
+                  <CodeIcon className={classes.iconCommon} /> {this.state.currentFile.name}
                 </Typography>
                 <hr />
-                <Editor file={this.state.currentFile} lastDeploymentExecutionResult={lastDeploymentExecutionResult} deploymentError={deploymentError} ctaDisabled={ctaDisabled} onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes} />
+                <Editor
+                  onSave={this.saveHandler.bind(this)}
+                  file={this.state.currentFile}
+                  lastDeploymentExecutionResult={lastDeploymentExecutionResult}
+                  deploymentError={deploymentError}
+                  ctaDisabled={ctaDisabled}
+                  onDeploy={this.deploymentHandler.bind(this)}
+                  buttonClasses={classes} />
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>

@@ -28,12 +28,10 @@ func main() {
 		panic("input contract name not set")
 	}
 
-	code, err := ioutil.ReadFile(*contractFileName)
+	methods, err := introspect(*contractFileName)
 	if err != nil {
 		panic("cannot find orbs code")
 	}
-
-	methods := extractPublicMethods(*contractFileName, code)
 
 	json, err := json.Marshal(methods)
 	if err != nil {
@@ -41,6 +39,14 @@ func main() {
 	}
 
 	println(string(json))
+}
+
+func introspect(filename string) ([]methodData, error) {
+	if code, err := ioutil.ReadFile(filename); err != nil {
+		return nil, err
+	} else {
+		return extractPublicMethods(filename, code), nil
+	}
 }
 
 func extractPublicMethods(filename string, src []byte) (methods []methodData) {
@@ -85,12 +91,18 @@ func extractMethod(method *ast.Object) methodData {
 
 func extractArgs(fields []*ast.Field) (args []argData) {
 	for _, field := range fields {
-		arg := argData{
-			Name: field.Names[0].Name,
-			Type: field.Type.(*ast.Ident).Name,
+		switch expr := field.Type.(type) {
+		case *ast.Ident:
+			args = append(args, argData{
+				Name: field.Names[0].Name,
+				Type: expr.Name,
+			})
+		case *ast.ArrayType:
+			args = append(args, argData{
+				Name: field.Names[0].Name,
+				Type: "[]" + expr.Elt.(*ast.Ident).Name,
+			})
 		}
-
-		args = append(args, arg)
 	}
 
 	return
