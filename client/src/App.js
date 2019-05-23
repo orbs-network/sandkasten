@@ -38,7 +38,7 @@ const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://loc
 
 class App extends React.Component {
   state = {
-    open: false,
+    open: true,
     contractName: '',
     dialogOpen: false,
     testDialogOpen: false,
