@@ -140,6 +140,11 @@ class App extends React.Component {
     }));
   }
 
+  async getGammaUsers(){
+    const { data } = await axios.get(`${basePath}/api/users/`);
+    
+  }
+
   async deploymentHandler(code) {
     await this.saveHandler(code);
     this.setDeployCTAStatus(true);

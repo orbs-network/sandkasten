@@ -13,6 +13,10 @@ import Chip from '@material-ui/core/Chip';
 import PlayIcon from '@material-ui/icons/PlayArrow';
 import Paper from '@material-ui/core/Paper';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
 
 import { withStyles } from '@material-ui/core/styles';
 
@@ -82,7 +86,6 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }
 
     newState[methodName].inflight = false;
     setState(newState);
-
   };
 
   useEffect(() => {
@@ -104,6 +107,18 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }
     newState[methodName].args[argIndex].value = value;
     setState(newState);
   }
+
+  const handleDropdownChange = event => {
+    const newState = { ...state };
+
+    const targetMethodName = event.target.name.split('_')[0];
+    const targetArg = event.target.name.split('_')[1];
+    const argIndex = newState[targetMethodName].args.findIndex(elem => elem.name === targetArg);
+
+    newState[targetMethodName].args[argIndex].value = event.target.value;
+
+    setState(newState);
+  };
 
   const renderMethod = ({ methodName, args, result, inflight }, index) => {
     let resultConsoleElem;
@@ -130,10 +145,42 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }
           subheader="Contract method"
         />
         <CardContent>
-          {!!args && args.map((arg, idx) => <div key={idx}>
-            <TextField onChange={(ev) => setArgValue(methodName, idx, ev.target.value)} key={idx} label={arg.name} value={arg.value} />
-            <Chip className={classes.typeChip} label={arg.type.toUpperCase()} />
-          </div>)}
+          {!!args && args.map((arg, idx) => {
+            const signees = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter(signee => signee !== signer);
+            const selectName = `${methodName}_${arg.name}`;
+
+            const selectRequired = (arg.name === 'to' || arg.name === 'from' || arg.name === 'spender' || arg.name === 'owner') ? true : false;
+            if (selectRequired && arg.type === '[]byte') {
+              return (
+                <div key={idx}>
+                  <FormControl className={classes.selectRoot} autoComplete="off">
+                    <InputLabel htmlFor={selectName}>{arg.name}</InputLabel>
+                    <Select
+                      value={arg.value}
+                      onChange={handleDropdownChange}
+                      inputProps={{
+                        name: selectName,
+                        id: selectName,
+                      }}
+                    >
+                      {signees.map(user => {
+                        return (
+                          <MenuItem value={user}>user{user}</MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                  <Chip className={classes.typeChip} label={arg.type.toUpperCase()} />
+                </div>
+              );
+            }
+
+            return (
+              <div key={idx}>
+                <TextField onChange={(ev) => setArgValue(methodName, idx, ev.target.value)} key={idx} label={arg.name} value={arg.value} />
+                <Chip className={classes.typeChip} label={arg.type.toUpperCase()} />
+              </div>);
+          })}
         </CardContent>
         <CardActions>
           <Button
