@@ -92,11 +92,20 @@ class ContractManager {
 
             const responseFromBlockchain = JSON.parse(callResult.stdout);
 
+            let events;
+            const result = Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString();
+            if (result === 'null') {
+                events = [];
+            } else {
+                events = JSON.parse(result);
+            }
+
             returnValue = {
                 ok: true,
-                result: JSON.parse(Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString()),
+                result: events
             };
 
+            console.log('from events: ', returnValue);
         } catch (err) {
             console.log(err);
             returnValue = {
@@ -162,9 +171,10 @@ class ContractManager {
 
         console.log(gammaOutputJson);
         const stateJson = await this.getContractState({ contractName });
+        const eventsJson = await this.getContractEvents({ contractName });
         const gammaOutput = JSON.parse(gammaOutputJson);
 
-        return { stateJson, gammaOutput };
+        return { stateJson, gammaOutput, eventsJson };
     }
 }
 

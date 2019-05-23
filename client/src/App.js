@@ -78,6 +78,7 @@ class App extends React.Component {
 
   onSetContractStateForInspector(data) {
     this.setContractState(data.stateJson.result);
+    this.setContractEvents(data.eventsJson.result);
   }
 
   setContractState(contractState) {
@@ -115,7 +116,6 @@ class App extends React.Component {
       this.setDeploymentResult(data.gammaResultJson);
     } else {
       const { contractName, stateJson, methods, eventsJson } = data;
-      debugger;
       this.setContractName(contractName);
       this.setContractEvents(eventsJson.result);
       this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
