@@ -114,6 +114,7 @@ class App extends React.Component {
   }
 
   async deploymentHandler(code) {
+    await this.saveHandler(code);
     this.setDeployCTAStatus(true);
     const { currentFile } = this.state;
     const { data } = await axios.post(`${basePath}/api/deploy/${currentFile.name}`, { data: code });
