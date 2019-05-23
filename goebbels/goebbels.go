@@ -8,8 +8,6 @@ import (
 )
 
 var requiredImports = []string {
-	"bytes",
-	"encoding/gob",
 	"encoding/hex",
 	"encoding/json",
 	"errors",
@@ -68,7 +66,7 @@ func injectInstrumentationCode(decorated string) string {
 	}
 	lines := strings.Split(string(f), "\n")
 
-	goebbelsWrites := strings.Join(lines[14:], "\n")
+	goebbelsWrites := strings.Join(lines[12:], "\n")
 
 	withGoebbelsJsonImport += goebbelsWrites
 	return withGoebbelsJsonImport

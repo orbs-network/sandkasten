@@ -6,7 +6,6 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -26,7 +25,6 @@ import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 
-import { mainListItems, secondaryListItems } from './listItems';
 import StateView from './StateView';
 import styles from './App.style';
 
@@ -34,6 +32,7 @@ import './App.css';
 import axios from 'axios';
 import Editor from './Editor';
 import Inspector from './Inspector';
+import FilesList from './FilesList';
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
@@ -46,7 +45,12 @@ class App extends React.Component {
     deploymentError: '',
     ctaDisabled: false,
     contractState: [],
-    methods: []
+    methods: [],
+    files: {},
+    currentFile: {
+      name: '',
+      code: ''
+    }
   };
 
   setContractName(contractName) {
@@ -109,6 +113,39 @@ class App extends React.Component {
     }
   };
 
+  async saveHandler(code) {
+    const newState = { ...this.state };
+    newState.currentFile.code = code;
+    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, {data: newState.currentFile.code});
+  }
+
+  fileClickHandler(fileName) {
+    const newState = { ...this.state };
+    newState.currentFile = this.state.files[fileName];
+    this.setState(newState);
+  }
+
+  createNewFileHandler() {
+    const fileName = prompt('Please enter the file name');
+    console.log(fileName);
+    const newState = { ...this.state };
+    const newFile = {
+      name: fileName,
+      code: ''
+    };
+    newState.currentFile = newFile;
+    newState.files[fileName] = newFile;
+    this.setState(newState);
+  }
+
+  async componentDidMount() {
+    const { data } = await axios.get(`${basePath}/api/files`);
+    const newState = { ...this.state };
+    newState.files = data;
+    newState.currentFile = data['Counter'];
+    this.setState(newState);
+  }
+
   render() {
     const { classes } = this.props;
     const {
@@ -161,9 +198,7 @@ class App extends React.Component {
             </IconButton>
           </div>
           <Divider />
-          <List>{mainListItems}</List>
-          <Divider />
-          <List>{secondaryListItems}</List>
+          <FilesList onNew={this.createNewFileHandler.bind(this)} onClick={this.fileClickHandler.bind(this)} files={this.state.files} />
         </Drawer>
 
         <Dialog
@@ -192,10 +227,17 @@ class App extends React.Component {
             <Grid item xs={12} sm={6}>
               <Paper className={classes.paper}>
                 <Typography variant="h5" component="h3">
-                  <CodeIcon className={classes.iconCommon} /> Code
+                  <CodeIcon className={classes.iconCommon} /> {this.state.currentFile.name}
                 </Typography>
                 <hr />
-                <Editor lastDeploymentExecutionResult={lastDeploymentExecutionResult} deploymentError={deploymentError} ctaDisabled={ctaDisabled} onDeploy={this.deploymentHandler.bind(this)} buttonClasses={classes.deployButton} />
+                <Editor 
+                  onSave={this.saveHandler.bind(this)}
+                  file={this.state.currentFile} 
+                  lastDeploymentExecutionResult={lastDeploymentExecutionResult} 
+                  deploymentError={deploymentError} 
+                  ctaDisabled={ctaDisabled} 
+                  onDeploy={this.deploymentHandler.bind(this)} 
+                  buttonClasses={classes} />
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>
