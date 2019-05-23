@@ -111,12 +111,13 @@ app.post('/api/deploy/:name', async (req, res) => {
 });
 
 app.post('/api/test/:name', async (req, res) => {
-    const {stdout, success} = await contracts.runTest(req.params.name);
+    const {stdout, stderr, success} = await contracts.runTest(req.params.name);
 
     res.json({
         ok: true,
         allTestsPassed: success,
         output: stdout,
+        stderr: stderr,
     });
     res.end();
 });
