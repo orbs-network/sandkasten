@@ -155,8 +155,12 @@ class ContractManager {
             ContractName: contractName,
             MethodName: method,
             Arguments: args.map((anArg) => {
+                let theType = anArg.type
+                if (theType === "[]byte") {
+                    theType = "bytes"
+                }
                 return {
-                    Type: anArg.type,
+                    Type: theType,
                     Value: anArg.value.toString(),
                 };
             })
