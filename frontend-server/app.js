@@ -124,9 +124,10 @@ app.post('/api/test/:name', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
     const users = require('./orbs-test-keys.json');
+    const sanitized = Object.entries(users).map(([Name, {Address}]) => ({Name, Address}));
     res.json({
         ok: true,
-        users,
+        users: sanitized,
     });
     res.end();
 });
