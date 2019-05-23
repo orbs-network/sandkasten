@@ -8,8 +8,6 @@ import (
 )
 
 var requiredImports = []string {
-	"bytes",
-	"encoding/gob",
 	"encoding/hex",
 	"encoding/json",
 	"errors",
