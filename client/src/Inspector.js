@@ -80,7 +80,7 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
       if (data.result.OutputArguments.length) {
         newState[methodName].result = data.result.OutputArguments[0].Value;
       } else {
-        newState[methodName].result = 'No meaningful output';
+        newState[methodName].result = 'Success';
       }
     }
 
