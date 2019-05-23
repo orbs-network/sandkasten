@@ -165,7 +165,8 @@ class App extends React.Component {
   }
 
 
-  async testHandler() {
+  async testHandler(code) {
+    await this.saveHandler(code);
     const { data } = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
     this.setState(Object.assign({}, this.state, {
       testOutput: data.output,
