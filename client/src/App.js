@@ -299,7 +299,7 @@ class App extends React.Component {
           <DialogContent>
             <DialogContentText>
               Ein Fehler ist aufgetreten:
-              <Paper className={classes.resultConsole}>{deploymentError}</Paper>
+              <Paper className={classes.resultConsole}><pre>{deploymentError}</pre></Paper>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -318,9 +318,12 @@ class App extends React.Component {
           <DialogTitle id="form-dialog-title">Test Results</DialogTitle>
           <DialogContent>
             <DialogContentText>
+              {this.state.testPassed ? "Tests passed" : "Test failure"}: <br />
+
               <Paper className={classes.resultConsole}>
-                Passed: {this.state.testPassed.toString()} <br />
-                Output: {this.state.testOutput}
+                <pre>
+                  Output: {this.state.testOutput}
+                </pre>
               </Paper>
             </DialogContentText>
           </DialogContent>
