@@ -52,7 +52,7 @@ const styles = theme => ({
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
-const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }) => {
+const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, users }) => {
   const [state, setState] = useState({});
 
   const updateMethodInFlight = (methodName) => {
@@ -117,6 +117,8 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }
 
     newState[targetMethodName].args[argIndex].value = event.target.value;
 
+    console.log(newState);
+
     setState(newState);
   };
 
@@ -146,7 +148,6 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }
         />
         <CardContent>
           {!!args && args.map((arg, idx) => {
-            const signees = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter(signee => signee !== signer);
             const selectName = `${methodName}_${arg.name}`;
 
             const selectRequired = (arg.name === 'to' || arg.name === 'from' || arg.name === 'spender' || arg.name === 'owner') ? true : false;
@@ -163,11 +164,13 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }
                         id: selectName,
                       }}
                     >
-                      {signees.map(user => {
-                        return (
-                          <MenuItem value={user}>user{user}</MenuItem>
-                        );
-                      })}
+                      {users
+                        .filter(user => user.Name !== `user${signer}`)
+                        .map(user => {
+                          return (
+                            <MenuItem value={user.Address}>{user.Name}</MenuItem>
+                          );
+                        })}
                     </Select>
                   </FormControl>
                   <Chip className={classes.typeChip} label={arg.type.toUpperCase()} />

@@ -19,7 +19,6 @@ import EventsStreamView from './EventsStreamView';
 
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import Dialog from '@material-ui/core/Dialog';
@@ -47,6 +46,7 @@ class App extends React.Component {
   state = {
     open: true,
     contractName: '',
+    users: [],
     dialogOpen: false,
     testDialogOpen: false,
     testOutput: '',
@@ -64,6 +64,10 @@ class App extends React.Component {
       code: ''
     }
   };
+
+  componentWillMount() {
+    this.getGammaUsers();
+  }
 
   setContractName(contractName) {
     this.setState(Object.assign({}, this.state, { contractName }));
@@ -90,7 +94,6 @@ class App extends React.Component {
   }
 
   onSetContractStateForInspector(data) {
-
     if (data.ok) {
       this.setContractState(data.stateJson.result);
       this.setContractEvents(data.eventsJson.result);
@@ -106,7 +109,6 @@ class App extends React.Component {
         dialogTitle,
       }));
     }
-
   }
 
   setContractState(contractState) {
@@ -140,9 +142,11 @@ class App extends React.Component {
     }));
   }
 
-  async getGammaUsers(){
-    const { data } = await axios.get(`${basePath}/api/users/`);
-    
+  async getGammaUsers() {
+    const { data } = await axios.get(`${basePath}/api/users`);
+    const { users } = data;
+    console.log(users);
+    this.setState(Object.assign({}, this.state, { users }));
   }
 
   async deploymentHandler(code) {
@@ -168,7 +172,6 @@ class App extends React.Component {
     newState.currentFile.code = code;
     await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, { data: newState.currentFile.code });
   }
-
 
   async testHandler(code) {
     await this.saveHandler(code);
@@ -350,7 +353,7 @@ class App extends React.Component {
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
                 <hr />
-                <Inspector onUpdateStateView={this.onSetContractStateForInspector.bind(this)} contractName={this.state.contractName} methods={this.state.methods} signer={this.state.signer} />
+                <Inspector onUpdateStateView={this.onSetContractStateForInspector.bind(this)} contractName={this.state.contractName} methods={this.state.methods} signer={this.state.signer} users={this.state.users} />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>
