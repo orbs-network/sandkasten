@@ -61,6 +61,7 @@ app.post('/api/execute', async (req, res) => {
         console.log(err);
         res.json({
             ok: false,
+            stateJson: {},
             result: err,
         });
     }
