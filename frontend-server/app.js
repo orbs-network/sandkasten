@@ -1,6 +1,8 @@
 'use strict';
 
 const express = require('express');
+const counterCode = require('./defaults/counter');
+const erc20Code = require('./defaults/erc20');
 
 const { FileManager } = require('./file-manager');
 const { ContractManager } = require('./contract-manager');
@@ -17,6 +19,8 @@ app.use(require('cors')(corsOption));
 app.use(require('body-parser').json());
 
 const files = new FileManager();
+files.new('Counter', counterCode);
+files.new('erc20', erc20Code);
 const contracts = new ContractManager(files);
 
 app.get('/api/files', async (req, res) => {

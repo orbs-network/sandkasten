@@ -3,10 +3,10 @@ class FileManager {
         this.files = {}
     }
 
-    new(name) {
-        this.files[name] = new File(name);
+    new(name, code = "") {
+        this.files[name] = new File(name, code);
     }
-    
+
     save(file) {
         this.files[file.name] = file;
     }
@@ -27,9 +27,9 @@ class FileManager {
 }
 
 class File {
-    constructor(name) {
+    constructor(name, code) {
         this.lastContractIdInGamma = null;
-        this.code = "";
+        this.code = code;
         this.name = name;
     }
 }
