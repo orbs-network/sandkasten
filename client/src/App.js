@@ -41,6 +41,9 @@ class App extends React.Component {
     open: false,
     contractName: '',
     dialogOpen: false,
+    testDialogOpen: false,
+    testOutput: '',
+    testPassed: false,
     lastDeploymentExecutionResult: '',
     deploymentError: '',
     ctaDisabled: false,
@@ -85,6 +88,10 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { dialogOpen: false }));
   }
 
+  handleTestClose() {
+    this.setState(Object.assign({}, this.state, { testDialogOpen: false }));
+  }
+
   setDeploymentResult({ ExecutionResult, OutputArguments }) {
     const deploymentError = OutputArguments[0].Value || '';
 
@@ -123,6 +130,11 @@ class App extends React.Component {
 
   async testHandler() {
     const {data} = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
+    this.setState(Object.assign({}, this.state, {
+      testOutput: data.output,
+      testDialogOpen: true,
+      testPassed: data.allTestsPassed
+    }));
     console.log(data);
   }
 
@@ -223,6 +235,28 @@ class App extends React.Component {
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleClose.bind(this)} color="primary">
+              Dismiss
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          maxWidth={'900px'}
+          open={this.state.testDialogOpen}
+          onClose={this.handleTestClose.bind(this)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Test Results</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              <Paper className={classes.resultConsole}>
+                Passed: {this.state.testPassed.toString()} <br />
+                Output: {this.state.testOutput}
+              </Paper>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleTestClose.bind(this)} color="primary">
               Dismiss
             </Button>
           </DialogActions>
