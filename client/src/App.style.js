@@ -83,6 +83,11 @@ export default theme => ({
     top: 16,
     right: 10,
   },
+  saveButton: {
+    position: 'absolute',
+    top: 16,
+    right: 105
+  },
   chartContainer: {
     marginLeft: -22,
   },
