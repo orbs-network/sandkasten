@@ -43,15 +43,18 @@ function StateView(props) {
       let previousValue;
       let previousValueElem;
 
-      if (previousState !== undefined && previousValue !== value) {
+      if (previousState !== undefined) {
         // Get the field's previous state if it exists
         previousValue = previousState[key];
-        previousValueElem = (
-          <React.Fragment>
-            <Chip className={classes.oldValue} label={previousValue} />
-            <ArrowRightIcon className={classes.arrow} />
-          </React.Fragment>
-        );
+
+        if (previousValue !== value) {
+          previousValueElem = (
+            <React.Fragment>
+              <Chip className={classes.oldValue} label={previousValue} />
+              <ArrowRightIcon className={classes.arrow} />
+            </React.Fragment>
+          );
+        }
       }
 
       return (
