@@ -187,6 +187,10 @@ class App extends React.Component {
   fileClickHandler(fileName) {
     const newState = { ...this.state };
     newState.currentFile = this.state.files[fileName];
+    newState.methods = [];
+    newState.contractState = [];
+    newState.contractEvents = [];
+    newState.contractName = '';
     this.setState(newState);
   }
 
@@ -353,7 +357,13 @@ class App extends React.Component {
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
                 <hr />
-                <Inspector onUpdateStateView={this.onSetContractStateForInspector.bind(this)} contractName={this.state.contractName} methods={this.state.methods} signer={this.state.signer} users={this.state.users} />
+                <Inspector
+                  onUpdateStateView={this.onSetContractStateForInspector.bind(this)}
+                  contractName={this.state.contractName}
+                  methods={this.state.methods}
+                  signer={this.state.signer}
+                  users={this.state.users}
+                />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>

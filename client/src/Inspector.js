@@ -100,7 +100,7 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
       return acc;
     }, {});
     setState(newState);
-  }, [methods]);
+  }, [contractName, methods]);
 
   const setArgValue = (methodName, argIndex, value) => {
     const newState = { ...state };
