@@ -98,10 +98,11 @@ app.post('/api/deploy', async (req, res) => {
 });
 
 app.post('/api/deploy/:name', async (req, res) => {
-    const {contractName, methods, stateJson} = contracts.decorateAndDeploy(files.load(req.params.name))
+    const {contractName, methods, stateJson, gammaResultJson} = await contracts.decorateAndDeploy(files.load(req.params.name))
 
     res.json({
         ok: true,
+        gammaResultJson,
         contractName,
         methods,
         stateJson,

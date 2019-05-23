@@ -100,7 +100,8 @@ class App extends React.Component {
 
   async deploymentHandler(code) {
     this.setDeployCTAStatus(true);
-    const { data } = await axios.post(`${basePath}/api/deploy`, { data: code });
+    const { currentFile } = this.state;
+    const { data } = await axios.post(`${basePath}/api/deploy/${currentFile.name}`, { data: code });
 
     this.setDeployCTAStatus(false);
     if (data.gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
@@ -116,7 +117,7 @@ class App extends React.Component {
   async saveHandler(code) {
     const newState = { ...this.state };
     newState.currentFile.code = code;
-    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, {data: newState.currentFile.code});
+    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, { data: newState.currentFile.code });
   }
 
   fileClickHandler(fileName) {
@@ -230,13 +231,13 @@ class App extends React.Component {
                   <CodeIcon className={classes.iconCommon} /> {this.state.currentFile.name}
                 </Typography>
                 <hr />
-                <Editor 
+                <Editor
                   onSave={this.saveHandler.bind(this)}
-                  file={this.state.currentFile} 
-                  lastDeploymentExecutionResult={lastDeploymentExecutionResult} 
-                  deploymentError={deploymentError} 
-                  ctaDisabled={ctaDisabled} 
-                  onDeploy={this.deploymentHandler.bind(this)} 
+                  file={this.state.currentFile}
+                  lastDeploymentExecutionResult={lastDeploymentExecutionResult}
+                  deploymentError={deploymentError}
+                  ctaDisabled={ctaDisabled}
+                  onDeploy={this.deploymentHandler.bind(this)}
                   buttonClasses={classes} />
               </Paper>
             </Grid>
