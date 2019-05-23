@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1"
+	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/events"
 	"github.com/orbs-network/orbs-contract-sdk/go/sdk/v1/state"
 )
 
@@ -18,6 +19,7 @@ func add(amount uint64) {
 	count := state.ReadUint64(COUNTER_KEY)
 	count += amount
 	state.WriteUint64(COUNTER_KEY, count)
+	events.EmitEvent(add, amount)
 }
 
 func get() uint64 {
