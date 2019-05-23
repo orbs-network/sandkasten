@@ -43,7 +43,7 @@ function StateView(props) {
       let previousValue;
       let previousValueElem;
 
-      if (previousState !== undefined) {
+      if (previousState !== undefined && previousValue !== value) {
         // Get the field's previous state if it exists
         previousValue = previousState[key];
         previousValueElem = (

@@ -26,6 +26,7 @@ const styles = {
     },
     currentValueChip: {
         color: '#ededed',
+        marginTop: 8,
         marginLeft: 5,
         marginRight: 5,
         background: '#7b9e65',
