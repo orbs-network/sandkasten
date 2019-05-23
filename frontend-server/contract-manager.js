@@ -104,7 +104,7 @@ class ContractManager {
         return { ok: true, contractName, methods, stateJson, gammaResultJson };
     }
 
-    async callGammaServer({ type, contractName, method, args }) {
+    async callGammaServer({ type, contractName, method, args, user }) {
         // Generate the json for sending the request
         const requestJsonObject = {
             ContractName: contractName,
@@ -117,11 +117,13 @@ class ContractManager {
             })
         };
 
+        user = user || "user1"; // for backwards compatibility
+
         const requestJsonFilepath = `/tmp/${uuid()}.json`;
 
         await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
         const requiredCallType = (type === 'tx') ? 'send-tx' : 'run-query';
-        const callResult = await exec(`gamma-cli ${requiredCallType} ${requestJsonFilepath} -signer user1`);
+        const callResult = await exec(`gamma-cli ${requiredCallType} ${requestJsonFilepath} -signer ${user}`);
         const gammaOutputJson = callResult.stdout;
 
         console.log(gammaOutputJson);
