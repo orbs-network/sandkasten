@@ -80,8 +80,23 @@ class App extends React.Component {
   }
 
   onSetContractStateForInspector(data) {
-    this.setContractState(data.stateJson.result);
-    this.setContractEvents(data.eventsJson.result);
+
+    if (data.ok) {
+      this.setContractState(data.stateJson.result);
+      this.setContractEvents(data.eventsJson.result);
+    } else {
+      const deploymentError = data.result.stderr;
+      const dialogTitle = "Contract Execution Failed";
+      const dialogOpen = true;
+
+      this.setState(Object.assign({}, this.state, {
+        lastDeploymentExecutionResult: "FooBar",
+        dialogOpen,
+        deploymentError,
+        dialogTitle,
+      }));
+    }
+
   }
 
   setContractState(contractState) {
@@ -102,6 +117,7 @@ class App extends React.Component {
 
   setDeploymentResult({ ExecutionResult, OutputArguments }) {
     const deploymentError = OutputArguments[0].Value || '';
+    const dialogTitle = "Contract Deployment Failed";
 
     const dialogOpen = (ExecutionResult === 'ERROR_SMART_CONTRACT' && deploymentError.length > 0) ?
       true : false;
@@ -110,6 +126,7 @@ class App extends React.Component {
       lastDeploymentExecutionResult: ExecutionResult,
       dialogOpen,
       deploymentError,
+      dialogTitle,
     }));
   }
 
@@ -182,6 +199,7 @@ class App extends React.Component {
       contractEvents,
       ctaDisabled,
       dialogOpen,
+      dialogTitle,
       lastDeploymentExecutionResult,
       deploymentError } = this.state;
 
@@ -237,10 +255,10 @@ class App extends React.Component {
           onClose={this.handleClose.bind(this)}
           aria-labelledby="form-dialog-title"
         >
-          <DialogTitle id="form-dialog-title">Contract Deployment Failed</DialogTitle>
+          <DialogTitle id="form-dialog-title">Achtung! {dialogTitle}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              We couldn't deploy your contract because of the following error(s):
+              Ein Fehler ist aufgetreten:
               <Paper className={classes.resultConsole}>{deploymentError}</Paper>
             </DialogContentText>
           </DialogContent>

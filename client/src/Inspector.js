@@ -68,17 +68,20 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes }) => {
     onUpdateStateView(data);
     const newState = { ...state };
 
-    newState[methodName].args.forEach((_, index) => {
-      newState[methodName].args[index].value = '';
-    });
-    if (data.result.OutputArguments.length) {
-      newState[methodName].result = data.result.OutputArguments[0].Value;
-    } else {
-      newState[methodName].result = 'No meaningful output';
+    if (data.ok) {
+      newState[methodName].args.forEach((_, index) => {
+        newState[methodName].args[index].value = '';
+      });
+      if (data.result.OutputArguments.length) {
+        newState[methodName].result = data.result.OutputArguments[0].Value;
+      } else {
+        newState[methodName].result = 'No meaningful output';
+      }
     }
 
     newState[methodName].inflight = false;
     setState(newState);
+
   };
 
   useEffect(() => {
