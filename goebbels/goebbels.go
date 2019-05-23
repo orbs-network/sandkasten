@@ -82,6 +82,7 @@ func injectImports(code string) string {
 		if loc == -1 || loc > importEndLoc || loc < importStartLoc {
 			// import string not in import block, inject
 			code = strings.Replace(code, "import (", fmt.Sprintf("import (\n\t\"%s\"", imp), 1)
+			importEndLoc = strings.Index(code, ")")
 		}
 	}
 
