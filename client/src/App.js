@@ -120,6 +120,12 @@ class App extends React.Component {
     await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, { data: newState.currentFile.code });
   }
 
+
+  async testHandler() {
+    const {data} = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
+    console.log(data);
+  }
+
   fileClickHandler(fileName) {
     const newState = { ...this.state };
     newState.currentFile = this.state.files[fileName];
@@ -233,6 +239,7 @@ class App extends React.Component {
                 <hr />
                 <Editor
                   onSave={this.saveHandler.bind(this)}
+                  onTest={this.testHandler.bind(this)}
                   file={this.state.currentFile}
                   lastDeploymentExecutionResult={lastDeploymentExecutionResult}
                   deploymentError={deploymentError}
