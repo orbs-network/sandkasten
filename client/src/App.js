@@ -299,7 +299,7 @@ class App extends React.Component {
           <DialogContent>
             <DialogContentText>
               Ein Fehler ist aufgetreten:
-              <Paper className={classes.resultConsole}><pre>{deploymentError}</pre></Paper>
+              <Paper className={classes.resultConsole}>{deploymentError}</Paper>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
