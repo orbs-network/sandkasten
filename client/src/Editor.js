@@ -17,6 +17,10 @@ class Editor extends React.Component {
     this.props.onSave(this.editorInstance.getValue());
   }
 
+  testHandler() {
+    this.props.onTest(this.editorInstance.getValue());
+  }
+
   componentDidMount() {
     this.editorInstance = editor.create(this.editorRef.current, {
       value: this.props.file.code,
@@ -52,7 +56,7 @@ class Editor extends React.Component {
           Deploy
         </Button>}
         {this.props.file.name.endsWith('_test') && <Button
-          onClick={this.props.onTest}
+          onClick={this.testHandler.bind(this)}
           disabled={ctaDisabled}
           className={buttonClasses.deployButton}
           variant="contained"
