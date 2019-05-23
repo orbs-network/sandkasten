@@ -48,7 +48,7 @@ const styles = theme => ({
 
 const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
 
-const Inspector = ({ contractName, methods, onUpdateStateView, classes }) => {
+const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer }) => {
   const [state, setState] = useState({});
 
   const updateMethodInFlight = (methodName) => {
@@ -62,6 +62,7 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes }) => {
     const { data } = await axios.post(`${basePath}/api/execute`, {
       type: 'tx',
       contractName,
+      user: `user${signer}`,
       method: methodName,
       args: args || []
     });

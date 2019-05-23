@@ -17,6 +17,11 @@ import MenuIcon from '@material-ui/icons/Menu';
 import NotesIcon from '@material-ui/icons/Notes';
 import EventsStreamView from './EventsStreamView';
 
+import Select from '@material-ui/core/Select';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -45,6 +50,7 @@ class App extends React.Component {
     dialogOpen: false,
     testDialogOpen: false,
     testOutput: '',
+    signer: 1,
     testPassed: false,
     lastDeploymentExecutionResult: '',
     deploymentError: '',
@@ -62,6 +68,10 @@ class App extends React.Component {
   setContractName(contractName) {
     this.setState(Object.assign({}, this.state, { contractName }));
   }
+
+  handleDropdownChange = event => {
+    this.setState(Object.assign({}, this.state, { [event.target.name]: event.target.value }));
+  };
 
   handleDrawerOpen = () => {
     this.setState(Object.assign({}, this.state, { open: true }));
@@ -138,7 +148,7 @@ class App extends React.Component {
 
 
   async testHandler() {
-    const {data} = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
+    const { data } = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
     this.setState(Object.assign({}, this.state, {
       testOutput: data.output,
       testDialogOpen: true,
@@ -213,6 +223,23 @@ class App extends React.Component {
               örbs Sandkasten
             </Typography>
           </Toolbar>
+          <FormControl className={classes.formControl}>
+            <Select
+              className={classes.signerSelect}
+              value={this.state.signer}
+              onChange={this.handleDropdownChange}
+              inputProps={{
+                name: 'signer',
+                id: 'signer',
+              }}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(user => {
+                return (
+                  <MenuItem value={user}>user{user}</MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
         </AppBar>
         <Drawer
           variant="permanent"
@@ -298,7 +325,7 @@ class App extends React.Component {
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
                 <hr />
-                <Inspector onUpdateStateView={this.onSetContractStateForInspector.bind(this)} contractName={this.state.contractName} methods={this.state.methods} />
+                <Inspector onUpdateStateView={this.onSetContractStateForInspector.bind(this)} contractName={this.state.contractName} methods={this.state.methods} signer={this.state.signer} />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>

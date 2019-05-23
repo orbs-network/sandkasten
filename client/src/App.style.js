@@ -7,6 +7,16 @@ export default theme => ({
   toolbar: {
     paddingRight: 24, // keep right padding when drawer closed
   },
+  signerSelect: {
+    paddingLeft: 14,
+    background: '#4c5cba',
+    color: '#fff'
+  },
+  formControl: {
+    position: 'absolute',
+    top: 15,
+    right: 20
+  },
   toolbarIcon: {
     display: 'flex',
     alignItems: 'center',
