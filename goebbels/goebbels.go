@@ -68,7 +68,7 @@ func injectInstrumentationCode(decorated string) string {
 	}
 	lines := strings.Split(string(f), "\n")
 
-	goebbelsWrites := strings.Join(lines[14:], "\n")
+	goebbelsWrites := strings.Join(lines[12:], "\n")
 
 	withGoebbelsJsonImport += goebbelsWrites
 	return withGoebbelsJsonImport
