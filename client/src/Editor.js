@@ -13,7 +13,6 @@ class Editor extends React.Component {
     this.props.onDeploy(this.editorInstance.getValue());
   }
 
-
   saveHandler() {
     this.props.onSave(this.editorInstance.getValue());
   }
@@ -53,6 +52,7 @@ class Editor extends React.Component {
           Deploy
         </Button>}
         {this.props.file.name.endsWith('_test') && <Button
+          onClick={this.props.onTest}
           disabled={ctaDisabled}
           className={buttonClasses.deployButton}
           variant="contained"

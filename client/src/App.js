@@ -40,9 +40,12 @@ const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://loc
 
 class App extends React.Component {
   state = {
-    open: false,
+    open: true,
     contractName: '',
     dialogOpen: false,
+    testDialogOpen: false,
+    testOutput: '',
+    testPassed: false,
     lastDeploymentExecutionResult: '',
     deploymentError: '',
     ctaDisabled: false,
@@ -93,6 +96,10 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { dialogOpen: false }));
   }
 
+  handleTestClose() {
+    this.setState(Object.assign({}, this.state, { testDialogOpen: false }));
+  }
+
   setDeploymentResult({ ExecutionResult, OutputArguments }) {
     const deploymentError = OutputArguments[0].Value || '';
 
@@ -127,6 +134,17 @@ class App extends React.Component {
     const newState = { ...this.state };
     newState.currentFile.code = code;
     await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, { data: newState.currentFile.code });
+  }
+
+
+  async testHandler() {
+    const {data} = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
+    this.setState(Object.assign({}, this.state, {
+      testOutput: data.output,
+      testDialogOpen: true,
+      testPassed: data.allTestsPassed
+    }));
+    console.log(data);
   }
 
   fileClickHandler(fileName) {
@@ -232,6 +250,28 @@ class App extends React.Component {
           </DialogActions>
         </Dialog>
 
+        <Dialog
+          maxWidth={'900px'}
+          open={this.state.testDialogOpen}
+          onClose={this.handleTestClose.bind(this)}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Test Results</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              <Paper className={classes.resultConsole}>
+                Passed: {this.state.testPassed.toString()} <br />
+                Output: {this.state.testOutput}
+              </Paper>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleTestClose.bind(this)} color="primary">
+              Dismiss
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <main className={classes.content}>
           <div className={classes.appBarSpacer} />
           <Grid container spacing={24}>
@@ -243,6 +283,7 @@ class App extends React.Component {
                 <hr />
                 <Editor
                   onSave={this.saveHandler.bind(this)}
+                  onTest={this.testHandler.bind(this)}
                   file={this.state.currentFile}
                   lastDeploymentExecutionResult={lastDeploymentExecutionResult}
                   deploymentError={deploymentError}
