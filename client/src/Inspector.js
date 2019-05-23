@@ -154,7 +154,7 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
             if (selectRequired && arg.type === '[]byte') {
               return (
                 <div key={idx}>
-                  <FormControl className={classes.selectRoot} autoComplete="off">
+                  <FormControl className={classes.selectRoot} autoComplete="off" style={{width: '50%'}}>
                     <InputLabel htmlFor={selectName}>{arg.name}</InputLabel>
                     <Select
                       value={arg.value}
