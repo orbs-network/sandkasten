@@ -122,6 +122,15 @@ app.post('/api/test/:name', async (req, res) => {
     res.end();
 });
 
+app.get('/api/users', async (req, res) => {
+    const users = require('./orbs-test-keys.json');
+    res.json({
+        ok: true,
+        users,
+    });
+    res.end();
+});
+
 const targetPort = process.env.port || 3030;
 
 app.listen(targetPort, function () {
