@@ -97,6 +97,11 @@ func extractArgs(fields []*ast.Field) (args []argData) {
 				Name: field.Names[0].Name,
 				Type: expr.Name,
 			})
+		case *ast.ArrayType:
+			args = append(args, argData{
+				Name: field.Names[0].Name,
+				Type: "[]" + expr.Elt.(*ast.Ident).Name,
+			})
 		}
 	}
 
