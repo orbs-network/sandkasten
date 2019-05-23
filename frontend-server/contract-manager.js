@@ -73,6 +73,41 @@ class ContractManager {
         return returnValue;
     }
 
+    async getContractEvents({ contractName }) {
+        let returnValue;
+        // Generate the json for sending the request
+        const requestJsonObject = {
+            ContractName: contractName,
+            MethodName: 'goebbelsReadProxiedEvents',
+            Arguments: []
+        };
+
+        const requestJsonFilepath = `/tmp/inspect_events.json`;
+        await exec(`rm -f ${requestJsonFilepath}`);
+        await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
+
+        try {
+            const callResult = await exec(`gamma-cli run-query ${requestJsonFilepath} -signer user1`);
+            console.log(callResult.stdout);
+
+            const responseFromBlockchain = JSON.parse(callResult.stdout);
+
+            returnValue = {
+                ok: true,
+                result: JSON.parse(Buffer.from(decodeHex(responseFromBlockchain.OutputArguments[0].Value)).toString()),
+            };
+
+        } catch (err) {
+            console.log(err);
+            returnValue = {
+                ok: false,
+                result: err,
+            };
+        }
+
+        return returnValue;
+    }
+
     async decorateAndDeploy(file) {
         const assignedUid = uuid();
         const contractName = `contract_${assignedUid}`;
@@ -96,12 +131,13 @@ class ContractManager {
 
         const gammaResponse = await this.discoverContract({ contractName });
         const stateJson = await this.getContractState({ contractName });
+        const eventsJson = await this.getContractEvents({ contractName });
         const methods = JSON.parse(gammaResponse);
 
         file.lastContractIdInGamma = contractName;
         this.files.save(file);
 
-        return { ok: true, contractName, methods, stateJson, gammaResultJson };
+        return { ok: true, contractName, methods, stateJson, gammaResultJson, eventsJson };
     }
 
     async callGammaServer({ type, contractName, method, args }) {

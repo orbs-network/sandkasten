@@ -14,6 +14,8 @@ import CodeIcon from '@material-ui/icons/Code';
 import InspectorIcon from '@material-ui/icons/Dns';
 import StateIcon from '@material-ui/icons/DeviceHub';
 import MenuIcon from '@material-ui/icons/Menu';
+import NotesIcon from '@material-ui/icons/Notes';
+import EventsStreamView from './EventsStreamView';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -45,6 +47,7 @@ class App extends React.Component {
     deploymentError: '',
     ctaDisabled: false,
     contractState: [],
+    contractEvents: [],
     methods: [],
     files: {},
     currentFile: {}
@@ -78,6 +81,10 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { contractState }));
   }
 
+  setContractEvents(contractEvents) {
+    this.setState(Object.assign({}, this.state, { contractEvents }));
+  }
+
   handleClose() {
     this.setState(Object.assign({}, this.state, { dialogOpen: false }));
   }
@@ -103,15 +110,17 @@ class App extends React.Component {
     if (data.gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
       this.setDeploymentResult(data.gammaResultJson);
     } else {
-      const { contractName, stateJson, methods } = data;
+      const { contractName, stateJson, methods, eventsJson } = data;
+      debugger;
       this.setContractName(contractName);
+      this.setContractEvents(eventsJson.result);
       this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
       this.setContractState(stateJson.result);
     }
   };
 
   fileClickHandler(fileName) {
-    const newState = {...this.state};
+    const newState = { ...this.state };
     newState.currentFile = this.state.files[fileName];
     this.setState(newState);
   }
@@ -119,7 +128,7 @@ class App extends React.Component {
   createNewFileHandler() {
     const fileName = prompt('Please enter the file name');
     console.log(fileName);
-    const newState = {...this.state};
+    const newState = { ...this.state };
     const newFile = {
       name: fileName,
       code: ''
@@ -141,6 +150,7 @@ class App extends React.Component {
     const { classes } = this.props;
     const {
       contractState,
+      contractEvents,
       ctaDisabled,
       dialogOpen,
       lastDeploymentExecutionResult,
@@ -239,6 +249,14 @@ class App extends React.Component {
                 </Typography>
                 <hr />
                 <StateView data={contractState}></StateView>
+              </Paper>
+
+              <Paper className={classNames(classes.paper, classes.stackMargin)}>
+                <Typography variant="h5" component="h3">
+                  <NotesIcon className={classes.iconCommon} /> Events
+                </Typography>
+                <hr />
+                <EventsStreamView data={contractEvents}></EventsStreamView>
               </Paper>
             </Grid>
           </Grid>

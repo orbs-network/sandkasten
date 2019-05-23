@@ -41,7 +41,6 @@ app.post('/api/files/:name', async (req, res) => {
 });
 
 app.post('/api/execute', async (req, res) => {
-
     try {
         const {stateJson, gammaOutput} = await contracts.callGammaServer(req.body);
 
@@ -64,6 +63,14 @@ app.post('/api/execute', async (req, res) => {
 app.get('/api/state', async (req, res) => {
     const contractName = req.query.contractName;
     const returnJson = await contracts.getContractState({ contractName });
+
+    res.json(returnJson);
+    res.end();
+});
+
+app.get('/api/events', async (req, res) => {
+    const contractName = req.query.contractName;
+    const returnJson = await contracts.getContractEvents({ contractName });
 
     res.json(returnJson);
     res.end();
