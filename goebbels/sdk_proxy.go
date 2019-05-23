@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -18,8 +16,8 @@ type stateRevisions []stateRevision
 
 type eventRecord struct
 {
-	functionName string
-	args [][]byte
+	FunctionName string
+	Args []interface{}
 }
 type eventRecords []eventRecord
 
@@ -58,8 +56,8 @@ func _mutateEvents(sig interface{}, args ...interface{}) {
 	}
 
 	newEvent := eventRecord{
-		functionName:functionName,
-		args:argsToArgumentArray(args),
+		FunctionName:functionName,
+		Args:args,
 	}
 
 	events := _getEvents()
@@ -76,11 +74,19 @@ func _setEvents(events eventRecords) {
 }
 
 func _getEvents() (events eventRecords) {
-	if err := json.Unmarshal(_readStates(), &events); err != nil {
+	if err := json.Unmarshal(_readEvents(), &events); err != nil {
 		panic(err)
 	}
 
 	return
+}
+
+func _readEvents() []byte {
+	if bytes := state.ReadBytes(EVENTS_KEY); len(bytes) == 0 {
+		return []byte("null")
+	} else {
+		return bytes
+	}
 }
 
 func goebbelsReadProxiedEvents() (eventsJson []byte) {
@@ -170,29 +176,4 @@ func GetContractMethodNameFromFunction(function interface{}) (string, error) {
 	} else {
 		return parts[len(parts)-1], nil
 	}
-}
-
-
-func argsToArgumentArray(args ...interface{}) [][]byte {
-	res := make([][]byte, len(args))
-	for i, arg := range args {
-		rawBytes, err := GetBytes(arg)
-		if err != nil {
-			panic(err)
-		}
-
-		res[i] = append(res[i], rawBytes...)
-		}
-
-	return res
-}
-
-func GetBytes(key interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(key)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }

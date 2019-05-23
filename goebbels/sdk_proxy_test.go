@@ -103,3 +103,21 @@ func TestExport(t *testing.T) {
 		require.Len(t, rawStates, 3, "expecting three states in this test")
 	})
 }
+
+
+func TestEvents(t *testing.T) {
+	unit.InServiceScope([]byte{}, []byte{}, func(mockery unit.Mockery) {
+
+		_mutateEvents(TestEvents, "arg1", 123, []byte("abc"))
+		_mutateEvents(TestEvents, 123)
+
+		rawData := goebbelsReadProxiedEvents()
+		var events eventRecords
+
+		err := json.Unmarshal(rawData, &events)
+		require.NoError(t, err, "unmarshal failed for exported states")
+		require.Len(t, events, 2, "expecting two events in this test")
+		require.EqualValues(t, "TestEvents", events[0].FunctionName, "expecting event name to be TestEvents")
+		require.EqualValues(t, 123, events[1].Args[0], "expecting event name to be TestEvents")
+	})
+}
