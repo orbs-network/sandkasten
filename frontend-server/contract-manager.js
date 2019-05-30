@@ -6,6 +6,8 @@ const uuid = require('uuid');
 const path = require('path');
 const { decodeHex } = require('orbs-client-sdk');
 const tmp = require('tmp-promise');
+const { queryContract, callContract } = require('./orbs-adapter');
+const { getUser } = require('./users-manager');
 
 class ContractManager {
   constructor(files) {
@@ -51,30 +53,18 @@ class ContractManager {
 
   async getContractState({ contractName }) {
     let returnValue;
-    // Generate the json for sending the request
-    const requestJsonObject = {
-      ContractName: contractName,
-      MethodName: 'goebbelsReadProxiedState',
-      Arguments: []
-    };
-
-    const requestJsonFilepath = `/tmp/inspect_state.json`;
-    await exec(`rm -f ${requestJsonFilepath}`);
-    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
 
     try {
-      const callResult = await exec(
-        `gamma-cli run-query ${requestJsonFilepath} -signer user1`
+      const callResult = await queryContract(
+        getUser('user1'),
+        contractName,
+        'goebbelsReadProxiedState'
       );
-      console.log(callResult.stdout);
-      const responseFromBlockchain = JSON.parse(callResult.stdout);
 
       returnValue = {
         ok: true,
         result: JSON.parse(
-          Buffer.from(
-            decodeHex(responseFromBlockchain.OutputArguments[0].Value)
-          ).toString()
+          Buffer.from(callResult.outputArguments[0].value).toString()
         )
       };
     } catch (err) {
@@ -208,7 +198,6 @@ class ContractManager {
     );
     const gammaOutputJson = callResult.stdout;
 
-    console.log(gammaOutputJson);
     const stateJson = await this.getContractState({ contractName });
     const eventsJson = await this.getContractEvents({ contractName });
     const gammaOutput = JSON.parse(gammaOutputJson);

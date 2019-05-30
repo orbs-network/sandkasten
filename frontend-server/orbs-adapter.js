@@ -27,7 +27,7 @@ async function callContract(user, contractName, methodName, ...params) {
 }
 
 async function queryContract(user, contractName, methodName, ...params) {
-  const [tx] = client.createQuery(
+  const tx = client.createQuery(
     user.PublicKey,
     contractName,
     methodName,
