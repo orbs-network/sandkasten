@@ -80,29 +80,15 @@ class ContractManager {
 
   async getContractEvents({ contractName }) {
     let returnValue;
-    // Generate the json for sending the request
-    const requestJsonObject = {
-      ContractName: contractName,
-      MethodName: 'goebbelsReadProxiedEvents',
-      Arguments: []
-    };
-
-    const requestJsonFilepath = `/tmp/inspect_events.json`;
-    await exec(`rm -f ${requestJsonFilepath}`);
-    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
-
     try {
-      const callResult = await exec(
-        `gamma-cli run-query ${requestJsonFilepath} -signer user1`
+      const callResult = await queryContract(
+        getUser('user1'),
+        contractName,
+        'goebbelsReadProxiedEvents'
       );
-      console.log(callResult.stdout);
-
-      const responseFromBlockchain = JSON.parse(callResult.stdout);
 
       let events;
-      const result = Buffer.from(
-        decodeHex(responseFromBlockchain.OutputArguments[0].Value)
-      ).toString();
+      const result = Buffer.from(callResult.outputArguments[0].value).toString()
       if (result === 'null') {
         events = [];
       } else {
