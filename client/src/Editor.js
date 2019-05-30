@@ -40,33 +40,37 @@ class Editor extends React.Component {
         {ctaDisabled && <LinearProgress />}
         <Button
           className={buttonClasses.saveButton}
-          variant="contained"
-          color="secondary"
+          variant='contained'
+          color='secondary'
           onClick={this.saveHandler.bind(this)}
         >
           Save
         </Button>
-        {!this.props.file.name.endsWith('_test') && <Button
-          disabled={ctaDisabled}
-          className={buttonClasses.deployButton}
-          variant="contained"
-          color="primary"
-          onClick={this.deployHandler.bind(this)}
-        >
-          Deploy
-        </Button>}
-        {this.props.file.name.endsWith('_test') && <Button
-          onClick={this.testHandler.bind(this)}
-          disabled={ctaDisabled}
-          className={buttonClasses.deployButton}
-          variant="contained"
-          color="primary"
-        >
-          Test
-        </Button>}
-        <article ref={this.editorRef} style={{ marginTop: 16, height: 580 }}></article>
+        {!this.props.file.name.endsWith('_test') && (
+          <Button
+            disabled={ctaDisabled}
+            className={buttonClasses.deployButton}
+            variant='contained'
+            color='primary'
+            onClick={this.deployHandler.bind(this)}
+          >
+            Deploy
+          </Button>
+        )}
+        {this.props.file.name.endsWith('_test') && (
+          <Button
+            onClick={this.testHandler.bind(this)}
+            disabled={ctaDisabled}
+            className={buttonClasses.deployButton}
+            variant='contained'
+            color='primary'
+          >
+            Test
+          </Button>
+        )}
+        <article ref={this.editorRef} style={{ marginTop: 16, height: 580 }} />
       </React.Fragment>
-    )
+    );
   }
 }
 

@@ -2,10 +2,10 @@ const drawerWidth = 240;
 
 export default theme => ({
   root: {
-    display: 'flex',
+    display: 'flex'
   },
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
+    paddingRight: 24 // keep right padding when drawer closed
   },
   signerSelect: {
     paddingLeft: 14,
@@ -22,14 +22,14 @@ export default theme => ({
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: '0 8px',
-    ...theme.mixins.toolbar,
+    ...theme.mixins.toolbar
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
+      duration: theme.transitions.duration.leavingScreen
+    })
   },
   resultConsole: {
     background: '#303030',
@@ -44,22 +44,22 @@ export default theme => ({
     width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+      duration: theme.transitions.duration.enteringScreen
+    })
   },
   menuButton: {
     marginLeft: 12,
-    marginRight: 36,
+    marginRight: 36
   },
   menuButtonHidden: {
-    display: 'none',
+    display: 'none'
   },
   title: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   paper: {
     position: 'relative',
-    padding: '4px 8px',
+    padding: '4px 8px'
   },
   drawerPaper: {
     position: 'relative',
@@ -67,31 +67,31 @@ export default theme => ({
     width: drawerWidth,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+      duration: theme.transitions.duration.enteringScreen
+    })
   },
   drawerPaperClose: {
     overflowX: 'hidden',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
+      duration: theme.transitions.duration.leavingScreen
     }),
     width: theme.spacing.unit * 7,
     [theme.breakpoints.up('sm')]: {
-      width: theme.spacing.unit * 9,
-    },
+      width: theme.spacing.unit * 9
+    }
   },
   appBarSpacer: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
     padding: theme.spacing.unit * 3,
     height: '100vh',
-    overflow: 'auto',
+    overflow: 'auto'
   },
   deployButton: {
     position: 'absolute',
     top: 16,
-    right: 10,
+    right: 10
   },
   saveButton: {
     position: 'absolute',
@@ -99,23 +99,23 @@ export default theme => ({
     right: 105
   },
   chartContainer: {
-    marginLeft: -22,
+    marginLeft: -22
   },
   tableContainer: {
-    height: 320,
+    height: 320
   },
   iconCommon: {
     position: 'relative',
     top: 10,
-    fontSize: 36,
+    fontSize: 36
   },
   stackMargin: {
-    marginTop: 16,
+    marginTop: 16
   },
   h5: {
-    marginBottom: theme.spacing.unit * 2,
+    marginBottom: theme.spacing.unit * 2
   },
   dialogOverides: {
-    maxWidth: 900,
-  },
+    maxWidth: 900
+  }
 });

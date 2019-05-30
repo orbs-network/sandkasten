@@ -22,11 +22,11 @@ import { withStyles } from '@material-ui/core/styles';
 
 const styles = theme => ({
   root: {
-    margin: 16,
+    margin: 16
   },
   icon: {
     position: 'relative',
-    top: 5,
+    top: 5
   },
   playIcon: {
     position: 'relative',
@@ -50,12 +50,20 @@ const styles = theme => ({
   }
 });
 
-const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
+const basePath =
+  process.env.NODE_ENV === 'production' ? '/edge' : 'http://localhost:3030';
 
-const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, users }) => {
+const Inspector = ({
+  contractName,
+  methods,
+  onUpdateStateView,
+  classes,
+  signer,
+  users
+}) => {
   const [state, setState] = useState({});
 
-  const updateMethodInFlight = (methodName) => {
+  const updateMethodInFlight = methodName => {
     const newState = { ...state };
     newState[methodName].inflight = true;
     setState(newState);
@@ -92,7 +100,11 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
     const newState = methods.reduce((acc, curr) => {
       acc[curr.methodName] = curr;
       if (curr.args) {
-        acc[curr.methodName].args = curr.args.map(a => ({ name: a.Name, type: a.Type, value: null }));
+        acc[curr.methodName].args = curr.args.map(a => ({
+          name: a.Name,
+          type: a.Type,
+          value: null
+        }));
       } else {
         acc[curr.methodName].args = [];
       }
@@ -106,14 +118,16 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
     const newState = { ...state };
     newState[methodName].args[argIndex].value = value;
     setState(newState);
-  }
+  };
 
   const handleDropdownChange = event => {
     const newState = { ...state };
 
     const targetMethodName = event.target.name.split('_')[0];
     const targetArg = event.target.name.split('_')[1];
-    const argIndex = newState[targetMethodName].args.findIndex(elem => elem.name === targetArg);
+    const argIndex = newState[targetMethodName].args.findIndex(
+      elem => elem.name === targetArg
+    );
 
     newState[targetMethodName].args[argIndex].value = event.target.value;
 
@@ -126,12 +140,16 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
     let resultConsoleElem;
 
     if (inflight) {
-      resultConsoleElem = (<React.Fragment>
-        <CircularProgress className={classes.progress} color="secondary" />
-      </React.Fragment>);
+      resultConsoleElem = (
+        <React.Fragment>
+          <CircularProgress className={classes.progress} color='secondary' />
+        </React.Fragment>
+      );
     } else {
       if (result !== null) {
-        resultConsoleElem = (<Paper className={classes.resultConsole}>{result}</Paper>);
+        resultConsoleElem = (
+          <Paper className={classes.resultConsole}>{result}</Paper>
+        );
       }
     }
 
@@ -144,62 +162,93 @@ const Inspector = ({ contractName, methods, onUpdateStateView, classes, signer, 
             </Avatar>
           }
           title={methodName.toUpperCase()}
-          subheader="Contract method"
+          subheader='Contract method'
         />
         <CardContent>
-          {!!args && args.map((arg, idx) => {
-            const selectName = `${methodName}_${arg.name}`;
+          {!!args &&
+            args.map((arg, idx) => {
+              const selectName = `${methodName}_${arg.name}`;
 
-            const selectRequired = (arg.name === 'to' || arg.name === 'from' || arg.name === 'spender' || arg.name === 'owner') ? true : false;
-            if (selectRequired && arg.type === '[]byte') {
+              const selectRequired =
+                arg.name === 'to' ||
+                arg.name === 'from' ||
+                arg.name === 'spender' ||
+                arg.name === 'owner'
+                  ? true
+                  : false;
+              if (selectRequired && arg.type === '[]byte') {
+                return (
+                  <div key={idx}>
+                    <FormControl
+                      className={classes.selectRoot}
+                      autoComplete='off'
+                      style={{ width: '50%' }}
+                    >
+                      <InputLabel htmlFor={selectName}>{arg.name}</InputLabel>
+                      <Select
+                        value={arg.value}
+                        onChange={handleDropdownChange}
+                        inputProps={{
+                          name: selectName,
+                          id: selectName
+                        }}
+                      >
+                        {users
+                          .filter(user => user.Name !== `user${signer}`)
+                          .map(user => {
+                            return (
+                              <MenuItem value={user.Address}>
+                                {user.Name}
+                              </MenuItem>
+                            );
+                          })}
+                      </Select>
+                    </FormControl>
+                    <Chip
+                      className={classes.typeChip}
+                      label={arg.type.toUpperCase()}
+                    />
+                  </div>
+                );
+              }
+
               return (
                 <div key={idx}>
-                  <FormControl className={classes.selectRoot} autoComplete="off" style={{width: '50%'}}>
-                    <InputLabel htmlFor={selectName}>{arg.name}</InputLabel>
-                    <Select
-                      value={arg.value}
-                      onChange={handleDropdownChange}
-                      inputProps={{
-                        name: selectName,
-                        id: selectName,
-                      }}
-                    >
-                      {users
-                        .filter(user => user.Name !== `user${signer}`)
-                        .map(user => {
-                          return (
-                            <MenuItem value={user.Address}>{user.Name}</MenuItem>
-                          );
-                        })}
-                    </Select>
-                  </FormControl>
-                  <Chip className={classes.typeChip} label={arg.type.toUpperCase()} />
+                  <TextField
+                    onChange={ev =>
+                      setArgValue(methodName, idx, ev.target.value)
+                    }
+                    key={idx}
+                    label={arg.name}
+                    value={arg.value}
+                  />
+                  <Chip
+                    className={classes.typeChip}
+                    label={arg.type.toUpperCase()}
+                  />
                 </div>
               );
-            }
-
-            return (
-              <div key={idx}>
-                <TextField onChange={(ev) => setArgValue(methodName, idx, ev.target.value)} key={idx} label={arg.name} value={arg.value} />
-                <Chip className={classes.typeChip} label={arg.type.toUpperCase()} />
-              </div>);
-          })}
+            })}
         </CardContent>
         <CardActions>
           <Button
             disabled={inflight}
             onClick={() => execute(methodName, args)}
-            variant="contained"
-            color="secondary"
-            size="small"><PlayIcon className={classes.playIcon} />Execute</Button>
+            variant='contained'
+            color='secondary'
+            size='small'
+          >
+            <PlayIcon className={classes.playIcon} />
+            Execute
+          </Button>
         </CardActions>
         {resultConsoleElem}
       </Card>
     );
-  }
+  };
   return (
     <React.Fragment>
-      <Typography variant="h6">Contract Name: {contractName}</Typography>
+      <Typography variant='h6'>Contract Name: {contractName}</Typography>
       {Object.values(state).map((method, index) => renderMethod(method, index))}
     </React.Fragment>
   );

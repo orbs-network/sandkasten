@@ -1,14 +1,14 @@
-const {FileManager} = require('./file-manager');
-const {ContractManager} = require('./contract-manager');
-const {expect} = require('chai');
+const { FileManager } = require('./file-manager');
+const { ContractManager } = require('./contract-manager');
+const { expect } = require('chai');
 
-describe("contract manager", () => {
-    it("runs tests for a non-broken contract and reports ok", async () => {
-        const files = new FileManager();
-        const contracts = new ContractManager(files);
+describe('contract manager', () => {
+  it('runs tests for a non-broken contract and reports ok', async () => {
+    const files = new FileManager();
+    const contracts = new ContractManager(files);
 
-        const counter = files.load("counter");
-        counter.code = `
+    const counter = files.load('counter');
+    counter.code = `
 package main
 
 import (
@@ -36,10 +36,10 @@ func get() uint64 {
 }       
        `;
 
-        files.save(counter);
+    files.save(counter);
 
-        const counterTest = files.load("counter_test");
-        counterTest.code = `
+    const counterTest = files.load('counter_test');
+    counterTest.code = `
 package main
 
 import (
@@ -57,21 +57,19 @@ func TestCounterInit(t *testing.T) {
 }       
 `;
 
-        files.save(counterTest);
+    files.save(counterTest);
 
-        const result = await contracts.runTest(counterTest.name);
-        expect(result.stderr).to.empty;
-        expect(result.success).to.be.true;
+    const result = await contracts.runTest(counterTest.name);
+    expect(result.stderr).to.empty;
+    expect(result.success).to.be.true;
+  });
 
-    });
+  it('runs a broken test and reports failure', async () => {
+    const files = new FileManager();
+    const contracts = new ContractManager(files);
 
-
-    it("runs a broken test and reports failure", async () => {
-        const files = new FileManager();
-        const contracts = new ContractManager(files);
-
-        const counter = files.load("counter");
-        counter.code = `
+    const counter = files.load('counter');
+    counter.code = `
 package main
 
 import (
@@ -99,10 +97,10 @@ func get() uint64 {
 }       
        `;
 
-        files.save(counter);
+    files.save(counter);
 
-        const counterTest = files.load("counter_test");
-        counterTest.code = `
+    const counterTest = files.load('counter_test');
+    counterTest.code = `
 package main
 
 import (
@@ -128,12 +126,10 @@ func TestThisOneShouldFail(t *testing.T) {
 }       
 `;
 
-        files.save(counterTest);
+    files.save(counterTest);
 
-        const result = await contracts.runTest(counterTest.name);
-        expect(result.success).to.be.false;
-        console.log(result.stdout);
-    });
-
-
+    const result = await contracts.runTest(counterTest.name);
+    expect(result.success).to.be.false;
+    console.log(result.stdout);
+  });
 });

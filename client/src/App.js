@@ -40,7 +40,8 @@ import Editor from './Editor';
 import Inspector from './Inspector';
 import FilesList from './FilesList';
 
-const basePath = (process.env.NODE_ENV === 'production') ? '/edge' : 'http://localhost:3030';
+const basePath =
+  process.env.NODE_ENV === 'production' ? '/edge' : 'http://localhost:3030';
 
 class App extends React.Component {
   state = {
@@ -74,7 +75,9 @@ class App extends React.Component {
   }
 
   handleDropdownChange = event => {
-    this.setState(Object.assign({}, this.state, { [event.target.name]: event.target.value }));
+    this.setState(
+      Object.assign({}, this.state, { [event.target.name]: event.target.value })
+    );
   };
 
   handleDrawerOpen = () => {
@@ -99,15 +102,17 @@ class App extends React.Component {
       this.setContractEvents(data.eventsJson.result);
     } else {
       const deploymentError = data.result.stderr;
-      const dialogTitle = "Contract Execution Failed";
+      const dialogTitle = 'Contract Execution Failed';
       const dialogOpen = true;
 
-      this.setState(Object.assign({}, this.state, {
-        lastDeploymentExecutionResult: "FooBar",
-        dialogOpen,
-        deploymentError,
-        dialogTitle,
-      }));
+      this.setState(
+        Object.assign({}, this.state, {
+          lastDeploymentExecutionResult: 'FooBar',
+          dialogOpen,
+          deploymentError,
+          dialogTitle
+        })
+      );
     }
   }
 
@@ -129,17 +134,21 @@ class App extends React.Component {
 
   setDeploymentResult({ ExecutionResult, OutputArguments }) {
     const deploymentError = OutputArguments[0].Value || '';
-    const dialogTitle = "Contract Deployment Failed";
+    const dialogTitle = 'Contract Deployment Failed';
 
-    const dialogOpen = (ExecutionResult === 'ERROR_SMART_CONTRACT' && deploymentError.length > 0) ?
-      true : false;
+    const dialogOpen =
+      ExecutionResult === 'ERROR_SMART_CONTRACT' && deploymentError.length > 0
+        ? true
+        : false;
 
-    this.setState(Object.assign({}, this.state, {
-      lastDeploymentExecutionResult: ExecutionResult,
-      dialogOpen,
-      deploymentError,
-      dialogTitle,
-    }));
+    this.setState(
+      Object.assign({}, this.state, {
+        lastDeploymentExecutionResult: ExecutionResult,
+        dialogOpen,
+        deploymentError,
+        dialogTitle
+      })
+    );
   }
 
   async getGammaUsers() {
@@ -153,7 +162,10 @@ class App extends React.Component {
     await this.saveHandler(code);
     this.setDeployCTAStatus(true);
     const { currentFile } = this.state;
-    const { data } = await axios.post(`${basePath}/api/deploy/${currentFile.name}`, { data: code });
+    const { data } = await axios.post(
+      `${basePath}/api/deploy/${currentFile.name}`,
+      { data: code }
+    );
 
     this.setDeployCTAStatus(false);
     if (data.gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
@@ -165,22 +177,28 @@ class App extends React.Component {
       this.setMethods(methods.map(m => ({ methodName: m.Name, args: m.Args })));
       this.setContractState(stateJson.result);
     }
-  };
+  }
 
   async saveHandler(code) {
     const newState = { ...this.state };
     newState.currentFile.code = code;
-    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, { data: newState.currentFile.code });
+    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, {
+      data: newState.currentFile.code
+    });
   }
 
   async testHandler(code) {
     await this.saveHandler(code);
-    const { data } = await axios.post(`${basePath}/api/test/${this.state.currentFile.name}`);
-    this.setState(Object.assign({}, this.state, {
-      testOutput: data.output,
-      testDialogOpen: true,
-      testPassed: data.allTestsPassed
-    }));
+    const { data } = await axios.post(
+      `${basePath}/api/test/${this.state.currentFile.name}`
+    );
+    this.setState(
+      Object.assign({}, this.state, {
+        testOutput: data.output,
+        testDialogOpen: true,
+        testPassed: data.allTestsPassed
+      })
+    );
     console.log(data);
   }
 
@@ -224,31 +242,38 @@ class App extends React.Component {
       dialogOpen,
       dialogTitle,
       lastDeploymentExecutionResult,
-      deploymentError } = this.state;
+      deploymentError
+    } = this.state;
 
     return (
       <div className={classes.root}>
         <CssBaseline />
         <AppBar
-          position="absolute"
-          className={classNames(classes.appBar, this.state.open && classes.appBarShift)}
+          position='absolute'
+          className={classNames(
+            classes.appBar,
+            this.state.open && classes.appBarShift
+          )}
         >
-          <Toolbar disableGutters={!this.state.open} className={classes.toolbar}>
+          <Toolbar
+            disableGutters={!this.state.open}
+            className={classes.toolbar}
+          >
             <IconButton
-              color="inherit"
-              aria-label="Open drawer"
+              color='inherit'
+              aria-label='Open drawer'
               onClick={this.handleDrawerOpen}
               className={classNames(
                 classes.menuButton,
-                this.state.open && classes.menuButtonHidden,
+                this.state.open && classes.menuButtonHidden
               )}
             >
               <MenuIcon />
             </IconButton>
             <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
+              component='h1'
+              variant='h6'
+              color='inherit'
               noWrap
               className={classes.title}
             >
@@ -262,21 +287,22 @@ class App extends React.Component {
               onChange={this.handleDropdownChange}
               inputProps={{
                 name: 'signer',
-                id: 'signer',
+                id: 'signer'
               }}
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(user => {
-                return (
-                  <MenuItem value={user}>user{user}</MenuItem>
-                );
+                return <MenuItem value={user}>user{user}</MenuItem>;
               })}
             </Select>
           </FormControl>
         </AppBar>
         <Drawer
-          variant="permanent"
+          variant='permanent'
           classes={{
-            paper: classNames(classes.drawerPaper, !this.state.open && classes.drawerPaperClose),
+            paper: classNames(
+              classes.drawerPaper,
+              !this.state.open && classes.drawerPaperClose
+            )
           }}
           open={this.state.open}
         >
@@ -286,16 +312,22 @@ class App extends React.Component {
             </IconButton>
           </div>
           <Divider />
-          <FilesList onNew={this.createNewFileHandler.bind(this)} onClick={this.fileClickHandler.bind(this)} files={this.state.files} />
+          <FilesList
+            onNew={this.createNewFileHandler.bind(this)}
+            onClick={this.fileClickHandler.bind(this)}
+            files={this.state.files}
+          />
         </Drawer>
 
         <Dialog
           maxWidth={'900px'}
           open={dialogOpen}
           onClose={this.handleClose.bind(this)}
-          aria-labelledby="form-dialog-title"
+          aria-labelledby='form-dialog-title'
         >
-          <DialogTitle id="form-dialog-title">Achtung! {dialogTitle}</DialogTitle>
+          <DialogTitle id='form-dialog-title'>
+            Achtung! {dialogTitle}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               Ein Fehler ist aufgetreten:
@@ -303,7 +335,7 @@ class App extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleClose.bind(this)} color="primary">
+            <Button onClick={this.handleClose.bind(this)} color='primary'>
               Dismiss
             </Button>
           </DialogActions>
@@ -313,22 +345,19 @@ class App extends React.Component {
           maxWidth={'900px'}
           open={this.state.testDialogOpen}
           onClose={this.handleTestClose.bind(this)}
-          aria-labelledby="form-dialog-title"
+          aria-labelledby='form-dialog-title'
         >
-          <DialogTitle id="form-dialog-title">Test Results</DialogTitle>
+          <DialogTitle id='form-dialog-title'>Test Results</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {this.state.testPassed ? "Tests passed" : "Test failure"}: <br />
-
+              {this.state.testPassed ? 'Tests passed' : 'Test failure'}: <br />
               <Paper className={classes.resultConsole}>
-                <pre>
-                  Output: {this.state.testOutput}
-                </pre>
+                <pre>Output: {this.state.testOutput}</pre>
               </Paper>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleTestClose.bind(this)} color="primary">
+            <Button onClick={this.handleTestClose.bind(this)} color='primary'>
               Dismiss
             </Button>
           </DialogActions>
@@ -339,8 +368,9 @@ class App extends React.Component {
           <Grid container spacing={24}>
             <Grid item xs={12} sm={6}>
               <Paper className={classes.paper}>
-                <Typography variant="h5" component="h3">
-                  <CodeIcon className={classes.iconCommon} /> {this.state.currentFile.name}
+                <Typography variant='h5' component='h3'>
+                  <CodeIcon className={classes.iconCommon} />{' '}
+                  {this.state.currentFile.name}
                 </Typography>
                 <hr />
                 <Editor
@@ -351,17 +381,20 @@ class App extends React.Component {
                   deploymentError={deploymentError}
                   ctaDisabled={ctaDisabled}
                   onDeploy={this.deploymentHandler.bind(this)}
-                  buttonClasses={classes} />
+                  buttonClasses={classes}
+                />
               </Paper>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Paper className={classes.paper}>
-                <Typography variant="h5" component="h3">
+                <Typography variant='h5' component='h3'>
                   <InspectorIcon className={classes.iconCommon} /> Inspector
                 </Typography>
                 <hr />
                 <Inspector
-                  onUpdateStateView={this.onSetContractStateForInspector.bind(this)}
+                  onUpdateStateView={this.onSetContractStateForInspector.bind(
+                    this
+                  )}
                   contractName={this.state.contractName}
                   methods={this.state.methods}
                   signer={this.state.signer}
@@ -370,19 +403,19 @@ class App extends React.Component {
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>
-                <Typography variant="h5" component="h3">
+                <Typography variant='h5' component='h3'>
                   <StateIcon className={classes.iconCommon} /> State view
                 </Typography>
                 <hr />
-                <StateView data={contractState}></StateView>
+                <StateView data={contractState} />
               </Paper>
 
               <Paper className={classNames(classes.paper, classes.stackMargin)}>
-                <Typography variant="h5" component="h3">
+                <Typography variant='h5' component='h3'>
                   <NotesIcon className={classes.iconCommon} /> Events
                 </Typography>
                 <hr />
-                <EventsStreamView data={contractEvents}></EventsStreamView>
+                <EventsStreamView data={contractEvents} />
               </Paper>
             </Grid>
           </Grid>
@@ -393,7 +426,7 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(App);
