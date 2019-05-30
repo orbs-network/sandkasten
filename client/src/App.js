@@ -132,18 +132,13 @@ class App extends React.Component {
     this.setState(Object.assign({}, this.state, { testDialogOpen: false }));
   }
 
-  setDeploymentResult({ ExecutionResult, OutputArguments }) {
-    const deploymentError = OutputArguments[0].Value || '';
+  setDeploymentResult(deploymentError) {
     const dialogTitle = 'Contract Deployment Failed';
-
-    const dialogOpen =
-      ExecutionResult === 'ERROR_SMART_CONTRACT' && deploymentError.length > 0
-        ? true
-        : false;
+    const dialogOpen = deploymentError.length > 0;
 
     this.setState(
       Object.assign({}, this.state, {
-        lastDeploymentExecutionResult: ExecutionResult,
+        lastDeploymentExecutionResult: 'ERROR_SMART_CONTRACT',
         dialogOpen,
         deploymentError,
         dialogTitle
@@ -168,8 +163,8 @@ class App extends React.Component {
     );
 
     this.setDeployCTAStatus(false);
-    if (data.gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
-      this.setDeploymentResult(data.gammaResultJson);
+    if (!data.ok) {
+      this.setDeploymentResult(data.deploymentError);
     } else {
       const { contractName, stateJson, methods, eventsJson } = data;
       this.setContractName(contractName);

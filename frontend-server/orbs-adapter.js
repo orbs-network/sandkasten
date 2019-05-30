@@ -47,7 +47,28 @@ async function queryContract(user, contractName, methodName, ...params) {
   return queryResult;
 }
 
+async function deployContract(user, contractName, contractCode) {
+  const contractNameArg = argString(contractName);
+  const contractLangArg = argUint32(1); // goLang
+  const contractCodeArg = argBytes(new TextEncoder().encode(contractCode));
+  const args = [contractNameArg, contractLangArg, contractCodeArg];
+
+  const [tx] = client.createTransaction(
+    user.PublicKey,
+    user.PrivateKey,
+    '_Deployments',
+    'deployService',
+    args,
+  );
+
+  const txResult = await client.sendTransaction(tx);
+  console.log('txResult', txResult);
+  return txResult;
+}
+
+
 module.exports = {
   callContract,
-  queryContract
+  queryContract,
+  deployContract
 };

@@ -2,11 +2,16 @@ const fs = require('fs');
 const util = require('util');
 const { exec } = require('child-process-promise');
 const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFile);
 const uuid = require('uuid');
 const path = require('path');
 const { decodeHex } = require('orbs-client-sdk');
 const tmp = require('tmp-promise');
-const { queryContract, callContract } = require('./orbs-adapter');
+const {
+  queryContract,
+  callContract,
+  deployContract
+} = require('./orbs-adapter');
 const { getUser } = require('./users-manager');
 
 class ContractManager {
@@ -88,7 +93,9 @@ class ContractManager {
       );
 
       let events;
-      const result = Buffer.from(callResult.outputArguments[0].value).toString()
+      const result = Buffer.from(
+        callResult.outputArguments[0].value
+      ).toString();
       if (result === 'null') {
         events = [];
       } else {
@@ -127,16 +134,19 @@ class ContractManager {
       { cwd: path.join(path.dirname(__dirname), 'goebbels') }
     );
 
-    const deployResult = await exec(
-      `gamma-cli deploy ${decoratedContractFilepath} -name ${contractName} -signer user1`
-    );
+    const decoratedContractCode = await readFile(decoratedContractFilepath);
 
-    const gammaResultJson = JSON.parse(deployResult.stdout);
-    if (gammaResultJson.ExecutionResult === 'ERROR_SMART_CONTRACT') {
-      return { ok: false, gammaResultJson };
+    const txResultJson = await deployContract(
+      getUser('user1'),
+      contractName,
+      decoratedContractCode.toString()
+    );
+    if (txResultJson.executionResult === 'ERROR_SMART_CONTRACT') {
+      return {
+        ok: false,
+        deploymentError: txResultJson.outputArguments[0].value || ''
+      };
     }
-    console.log('stdout: ', deployResult.stdout);
-    console.log('stderr: ', deployResult.stderr);
 
     const gammaResponse = await this.discoverContract({ contractName });
     const stateJson = await this.getContractState({ contractName });
@@ -151,7 +161,7 @@ class ContractManager {
       contractName,
       methods,
       stateJson,
-      gammaResultJson,
+      txResultJson,
       eventsJson
     };
   }
