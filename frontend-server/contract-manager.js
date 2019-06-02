@@ -5,7 +5,12 @@ const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);
 const uuid = require('uuid');
 const path = require('path');
-const { decodeHex } = require('orbs-client-sdk');
+const {
+  argUint32,
+  argUint64,
+  argString,
+  argBytes
+} = require('orbs-client-sdk');
 const tmp = require('tmp-promise');
 const {
   queryContract,
@@ -148,10 +153,10 @@ class ContractManager {
       };
     }
 
-    const gammaResponse = await this.discoverContract({ contractName });
+    const discoverResponse = await this.discoverContract({ contractName });
     const stateJson = await this.getContractState({ contractName });
     const eventsJson = await this.getContractEvents({ contractName });
-    const methods = JSON.parse(gammaResponse);
+    const methods = JSON.parse(discoverResponse);
 
     file.lastContractIdInGamma = contractName;
     this.files.save(file);
@@ -166,39 +171,39 @@ class ContractManager {
     };
   }
 
-  async callGammaServer({ type, contractName, method, args, user }) {
-    // Generate the json for sending the request
-    const requestJsonObject = {
-      ContractName: contractName,
-      MethodName: method,
-      Arguments: args.map(anArg => {
-        let theType = anArg.type;
-        if (theType === '[]byte') {
-          theType = 'bytes';
-        }
-        return {
-          Type: theType,
-          Value: anArg.value.toString()
-        };
-      })
-    };
-
-    user = user || 'user1'; // for backwards compatibility
-
-    const requestJsonFilepath = `/tmp/${uuid()}.json`;
-
-    await writeFile(requestJsonFilepath, JSON.stringify(requestJsonObject));
-    const requiredCallType = type === 'tx' ? 'send-tx' : 'run-query';
-    const callResult = await exec(
-      `gamma-cli ${requiredCallType} ${requestJsonFilepath} -signer ${user}`
+  async callGammaServer({ contractName, method, args, user }) {
+    const convertedArgs = args.map(toOrbsArgs);
+    console.log(args);
+    console.log(convertedArgs);
+    const result = await callContract(
+      getUser(user),
+      contractName,
+      method,
+      ...convertedArgs
     );
-    const gammaOutputJson = callResult.stdout;
-
     const stateJson = await this.getContractState({ contractName });
     const eventsJson = await this.getContractEvents({ contractName });
-    const gammaOutput = JSON.parse(gammaOutputJson);
 
-    return { stateJson, gammaOutput, eventsJson };
+    return { stateJson, result, eventsJson };
+  }
+}
+
+function toOrbsArgs(arg) {
+  switch (arg.type) {
+    case 'uint32':
+      return argUint32(Number(arg.value) || 0);
+
+    case 'uint64':
+      return argUint64(Number(arg.value) || 0);
+
+    case 'string':
+      return argString(arg.value);
+
+    case '[]byte':
+      return argBytes(arg.value);
+
+    default:
+      break;
   }
 }
 

@@ -52,14 +52,18 @@ app.post('/api/execute', async (req, res) => {
     const {
       stateJson,
       eventsJson,
-      gammaOutput
+      result
     } = await contracts.callGammaServer(req.body);
+
+    // convert bigint to string (json can't handle bigints)
+    result.blockHeight = result.blockHeight.toString();
+    result.outputArguments.forEach(arg => arg.value = arg.value.toString());
 
     res.json({
       ok: true,
       eventsJson,
       stateJson,
-      result: gammaOutput
+      result
     });
   } catch (err) {
     console.log(err);

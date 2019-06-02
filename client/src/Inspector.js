@@ -85,8 +85,8 @@ const Inspector = ({
       newState[methodName].args.forEach((_, index) => {
         newState[methodName].args[index].value = '';
       });
-      if (data.result.OutputArguments.length) {
-        newState[methodName].result = data.result.OutputArguments[0].Value;
+      if (data.result.outputArguments.length) {
+        newState[methodName].result = data.result.outputArguments[0].value;
       } else {
         newState[methodName].result = 'Success';
       }
