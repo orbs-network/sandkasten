@@ -272,7 +272,7 @@ class App extends React.Component {
               noWrap
               className={classes.title}
             >
-              örbs Sandkasten
+              Orbs Playground
             </Typography>
           </Toolbar>
           <FormControl className={classes.formControl}>
@@ -321,11 +321,11 @@ class App extends React.Component {
           aria-labelledby='form-dialog-title'
         >
           <DialogTitle id='form-dialog-title'>
-            Achtung! {dialogTitle}
+            Error! {dialogTitle}
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Ein Fehler ist aufgetreten:
+            An error has occurred:
               <Paper className={classes.resultConsole}>{deploymentError}</Paper>
             </DialogContentText>
           </DialogContent>
