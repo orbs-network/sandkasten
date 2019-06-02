@@ -49,16 +49,22 @@ app.post('/api/files/:name', async (req, res) => {
 
 app.post('/api/execute', async (req, res) => {
   try {
-    const {
-      stateJson,
-      eventsJson,
-      result
-    } = await contracts.callGammaServer(req.body);
+    const { stateJson, eventsJson, result } = await contracts.callGammaServer(
+      req.body
+    );
 
     // convert bigint to string (json can't handle bigints)
     result.blockHeight = result.blockHeight.toString();
-    result.outputArguments.forEach(arg => arg.value = arg.value.toString());
+    result.outputArguments.forEach(arg => (arg.value = arg.value.toString()));
+    result.outputEvents.forEach(event =>
+      event.arguments.forEach(
+        arg =>
+          (arg.value =
+            typeof arg.value === 'bigint' ? arg.value.toString : arg.value)
+      )
+    );
 
+    console.log('result:', result.outputEvents[0].arguments);
     res.json({
       ok: true,
       eventsJson,

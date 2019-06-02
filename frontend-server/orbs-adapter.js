@@ -13,10 +13,6 @@ async function callContract(user, contractName, methodName, ...params) {
     params
   );
   const txResult = await client.sendTransaction(tx);
-  if (txResult.executionResult !== 'SUCCESS') {
-    console.log(txResult);
-    throw new Error(txResult.executionResult);
-  }
   if (txResult.outputArguments.length > 0) {
     console.log(
       `${methodName} returned`,
@@ -34,10 +30,7 @@ async function queryContract(user, contractName, methodName, ...params) {
     params
   );
   const queryResult = await client.sendQuery(tx);
-  if (queryResult.executionResult !== 'SUCCESS') {
-    console.log(queryResult);
-    throw new Error(queryResult.executionResult);
-  }
+
   if (queryResult.outputArguments.length > 0) {
     console.log(
       `${methodName} returned`,

@@ -9,7 +9,8 @@ const {
   argUint32,
   argUint64,
   argString,
-  argBytes
+  argBytes,
+decodeHex
 } = require('orbs-client-sdk');
 const tmp = require('tmp-promise');
 const {
@@ -173,8 +174,6 @@ class ContractManager {
 
   async callGammaServer({ contractName, method, args, user }) {
     const convertedArgs = args.map(toOrbsArgs);
-    console.log(args);
-    console.log(convertedArgs);
     const result = await callContract(
       getUser(user),
       contractName,
@@ -200,7 +199,7 @@ function toOrbsArgs(arg) {
       return argString(arg.value);
 
     case '[]byte':
-      return argBytes(arg.value);
+      return arg.value ? argBytes(decodeHex(arg.value)) : argBytes(new Uint8Array());
 
     default:
       break;
