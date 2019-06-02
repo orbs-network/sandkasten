@@ -7,20 +7,20 @@ import FileIcon from '@material-ui/icons/RoundedCorner';
 import AddCircle from '@material-ui/icons/AddCircle';
 
 const FilesList = ({ files, onClick, onNew }) => {
-  const renderItem = fileName => {
+  const renderItem = (fileData, fileIdx) => {
     return (
-      <ListItem button key={fileName} onClick={() => onClick(fileName)}>
+      <ListItem button key={fileData.name} onClick={() => onClick(fileIdx)}>
         <ListItemIcon>
           <FileIcon />
         </ListItemIcon>
-        <ListItemText primary={fileName + '.go'} />
+        <ListItemText primary={fileData.name + '.go'} />
       </ListItem>
     );
   };
   return (
     <List>
       <div>
-        {Object.keys(files).map(renderItem)}
+        {files.map(renderItem)}
         <ListItem button key='new' onClick={onNew}>
           <ListItemIcon>
             <AddCircle />

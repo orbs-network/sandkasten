@@ -1,4 +1,4 @@
-export const counter = `
+export const counterCode = `
 package main
 
 import (

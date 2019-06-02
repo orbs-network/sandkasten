@@ -1,71 +1,69 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import CodeIcon from '@material-ui/icons/Code';
-import InspectorIcon from '@material-ui/icons/Dns';
-import StateIcon from '@material-ui/icons/DeviceHub';
-import MenuIcon from '@material-ui/icons/Menu';
-import NotesIcon from '@material-ui/icons/Notes';
-import EventsStreamView from './EventsStreamView';
-
-import Select from '@material-ui/core/Select';
-import FormControl from '@material-ui/core/FormControl';
-import MenuItem from '@material-ui/core/MenuItem';
-
+import Button from '@material-ui/core/Button';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from '@material-ui/core/Button';
-
-import Paper from '@material-ui/core/Paper';
+import Divider from '@material-ui/core/Divider';
+import Drawer from '@material-ui/core/Drawer';
+import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
-
-import StateView from './StateView';
-import styles from './App.style';
-
-import './App.css';
+import IconButton from '@material-ui/core/IconButton';
+import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
+import Select from '@material-ui/core/Select';
+import { withStyles } from '@material-ui/core/styles';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import CodeIcon from '@material-ui/icons/Code';
+import StateIcon from '@material-ui/icons/DeviceHub';
+import InspectorIcon from '@material-ui/icons/Dns';
+import MenuIcon from '@material-ui/icons/Menu';
+import NotesIcon from '@material-ui/icons/Notes';
 import axios from 'axios';
+import classNames from 'classnames';
+import PropTypes from 'prop-types';
+import React from 'react';
+import './App.css';
+import styles from './App.style';
+import { counterCode } from './contracts/counter';
+import { erc20Code } from './contracts/erc20';
 import Editor from './Editor';
-import Inspector from './Inspector';
+import EventsStreamView from './EventsStreamView';
 import FilesList from './FilesList';
+import Inspector from './Inspector';
+import StateView from './StateView';
 
 const basePath =
   process.env.NODE_ENV === 'production' ? '/edge' : 'http://localhost:3030';
 
 class App extends React.Component {
-  state = {
-    open: true,
-    contractName: '',
-    users: [],
-    dialogOpen: false,
-    testDialogOpen: false,
-    testOutput: '',
-    signer: 1,
-    testPassed: false,
-    lastDeploymentExecutionResult: '',
-    deploymentError: '',
-    ctaDisabled: false,
-    contractState: [],
-    contractEvents: [],
-    methods: [],
-    files: {},
-    currentFile: {
-      name: '',
-      code: ''
-    }
-  };
+  constructor(props) {
+    super(props);
 
+    const files = this.loadFiles();
+    this.state = {
+      open: true,
+      contractName: '',
+      users: [],
+      dialogOpen: false,
+      testDialogOpen: false,
+      testOutput: '',
+      signer: 1,
+      testPassed: false,
+      lastDeploymentExecutionResult: '',
+      deploymentError: '',
+      ctaDisabled: false,
+      contractState: [],
+      contractEvents: [],
+      methods: [],
+      files,
+      currentFile: files[0]
+    };
+  }
   componentWillMount() {
     this.getGammaUsers();
   }
@@ -177,9 +175,8 @@ class App extends React.Component {
   async saveHandler(code) {
     const newState = { ...this.state };
     newState.currentFile.code = code;
-    await axios.post(`${basePath}/api/files/${newState.currentFile.name}`, {
-      data: newState.currentFile.code
-    });
+    this.setState(newState);
+    this.saveFiles();
   }
 
   async testHandler(code) {
@@ -197,14 +194,34 @@ class App extends React.Component {
     console.log(data);
   }
 
-  fileClickHandler(fileName) {
+  fileClickHandler(fileIdx) {
     const newState = { ...this.state };
-    newState.currentFile = this.state.files[fileName];
+    newState.currentFile = this.state.files[fileIdx];
     newState.methods = [];
     newState.contractState = [];
     newState.contractEvents = [];
     newState.contractName = '';
     this.setState(newState);
+  }
+
+  saveFiles() {
+    localStorage.setItem(`user_files`, JSON.stringify(this.state.files));
+  }
+
+  loadFiles() {
+    const defaultFiles = [
+      {
+        name: 'Counter',
+        code: counterCode
+      },
+      {
+        name: 'ERC20',
+        code: erc20Code
+      }
+    ];
+
+    const savedFiles = localStorage.getItem(`user_files`);
+    return savedFiles ? JSON.parse(savedFiles) : defaultFiles;
   }
 
   createNewFileHandler() {
@@ -216,16 +233,9 @@ class App extends React.Component {
       code: ''
     };
     newState.currentFile = newFile;
-    newState.files[fileName] = newFile;
+    newState.files.push(newFile);
     this.setState(newState);
-  }
-
-  async componentDidMount() {
-    const { data } = await axios.get(`${basePath}/api/files`);
-    const newState = { ...this.state };
-    newState.files = data;
-    newState.currentFile = data['Counter'];
-    this.setState(newState);
+    this.saveFiles();
   }
 
   render() {
@@ -320,12 +330,10 @@ class App extends React.Component {
           onClose={this.handleClose.bind(this)}
           aria-labelledby='form-dialog-title'
         >
-          <DialogTitle id='form-dialog-title'>
-            Error! {dialogTitle}
-          </DialogTitle>
+          <DialogTitle id='form-dialog-title'>Error! {dialogTitle}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-            An error has occurred:
+              An error has occurred:
               <Paper className={classes.resultConsole}>{deploymentError}</Paper>
             </DialogContentText>
           </DialogContent>
