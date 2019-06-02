@@ -5,6 +5,7 @@ class FileManager {
 
   new(name, code = '') {
     this.files[name] = new File(name, code);
+    return this.files[name];
   }
 
   save(file) {

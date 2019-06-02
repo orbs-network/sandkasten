@@ -186,7 +186,7 @@ const Inspector = ({
                     >
                       <InputLabel htmlFor={selectName}>{arg.name}</InputLabel>
                       <Select
-                        value={arg.value}
+                        value={arg.value ? arg.value : ''}
                         onChange={handleDropdownChange}
                         inputProps={{
                           name: selectName,
@@ -206,7 +206,7 @@ const Inspector = ({
                     </FormControl>
                     <Chip
                       className={classes.typeChip}
-                      label={arg.type.toUpperCase()}
+                      label={arg.type ? arg.type.toUpperCase() : ''}
                     />
                   </div>
                 );
@@ -220,11 +220,11 @@ const Inspector = ({
                     }
                     key={idx}
                     label={arg.name}
-                    value={arg.value}
+                    value={arg.value ? arg.value : ''}
                   />
                   <Chip
                     className={classes.typeChip}
-                    label={arg.type.toUpperCase()}
+                    label={arg.type ? arg.type.toUpperCase() : ''}
                   />
                 </div>
               );

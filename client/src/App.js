@@ -147,7 +147,6 @@ class App extends React.Component {
   async getGammaUsers() {
     const { data } = await axios.get(`${basePath}/api/users`);
     const { users } = data;
-    console.log(users);
     this.setState(Object.assign({}, this.state, { users }));
   }
 
@@ -295,8 +294,8 @@ class App extends React.Component {
                 id: 'signer'
               }}
             >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(user => {
-                return <MenuItem value={user}>user{user}</MenuItem>;
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((user, idx) => {
+                return <MenuItem value={user} key={idx}>user{user}</MenuItem>;
               })}
             </Select>
           </FormControl>
@@ -325,7 +324,7 @@ class App extends React.Component {
         </Drawer>
 
         <Dialog
-          maxWidth={'900px'}
+          maxWidth={'md'}
           open={dialogOpen}
           onClose={this.handleClose.bind(this)}
           aria-labelledby='form-dialog-title'
@@ -345,7 +344,7 @@ class App extends React.Component {
         </Dialog>
 
         <Dialog
-          maxWidth={'900px'}
+          maxWidth={'lg'}
           open={this.state.testDialogOpen}
           onClose={this.handleTestClose.bind(this)}
           aria-labelledby='form-dialog-title'

@@ -17,35 +17,7 @@ app.use(require('cors')(corsOption));
 app.use(require('body-parser').json());
 
 const files = new FileManager();
-
-function populateDefaults(files) {
-  const counterCode = require('./defaults/counter');
-  const counterTestCode = require('./defaults/counter-test');
-  const erc20Code = require('./defaults/erc20');
-  files.new('Counter', counterCode);
-  files.new('Counter_test', counterTestCode);
-  files.new('erc20', erc20Code);
-}
-
-populateDefaults(files);
 const contracts = new ContractManager(files);
-
-app.get('/api/files', async (req, res) => {
-  res.json(files.list());
-  res.end();
-});
-
-app.get('/api/files/:name', async (req, res) => {
-  res.json(files.load(req.params.name));
-  res.end();
-});
-
-app.post('/api/files/:name', async (req, res) => {
-  const file = files.load(req.params.name);
-  file.code = req.body.data;
-  files.save(file);
-  res.end();
-});
 
 app.post('/api/execute', async (req, res) => {
   try {
@@ -64,7 +36,6 @@ app.post('/api/execute', async (req, res) => {
       )
     );
 
-    console.log('result:', result.outputEvents[0].arguments);
     res.json({
       ok: true,
       eventsJson,
@@ -136,13 +107,14 @@ app.post('/api/deploy', async (req, res) => {
 });
 
 app.post('/api/deploy/:name', async (req, res) => {
+  const file = files.new(req.params.name, req.body.data);
   const {
     contractName,
     methods,
     stateJson,
     deploymentError,
     eventsJson
-  } = await contracts.decorateAndDeploy(files.load(req.params.name));
+  } = await contracts.decorateAndDeploy(file);
 
   res.json({
     ok: true,
